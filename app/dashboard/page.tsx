@@ -42,24 +42,21 @@ export default function Dashboard() {
         const init = async () => {
             // 1. Get User
             const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push('/login')
-                return
-            }
 
-            // 2. Get Profile
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single()
+            if (user) {
+                // 2. Get Profile only if user exists
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single()
 
-            if (profile) {
-                setUserProfile(profile)
-                // Smart Filter Defaults (only if user hasn't manually changed them yet - typically on first load)
-                // Actually, let's just set them as initial state if we haven't touched them.
-                if (selectedBranch === '') setSelectedBranch(profile.branch || '')
-                if (selectedSemester === '') setSelectedSemester(profile.semester || '')
+                if (profile) {
+                    setUserProfile(profile)
+                    // Smart Filter Defaults (only if user logged in with defaults)
+                    if (selectedBranch === '') setSelectedBranch(profile.branch || '')
+                    if (selectedSemester === '') setSelectedSemester(profile.semester || '')
+                }
             }
 
             fetchResources()
@@ -175,17 +172,29 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="/admin/upload">
-                            <button className="hidden sm:flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                                <span className="material-symbols-outlined text-[18px]">upload_file</span>
-                                Upload
-                            </button>
-                        </Link>
-                        <Link href="/profile">
-                            <div className="size-9 rounded-full bg-gray-700 flex items-center justify-center text-white ring-2 ring-border-dark hover:ring-primary cursor-pointer">
-                                <span className="material-symbols-outlined">person</span>
-                            </div>
-                        </Link>
+                        {userProfile ? (
+                            <>
+                                {userProfile.role === 'admin' && (
+                                    <Link href="/admin/dashboard">
+                                        <button className="hidden sm:flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                                            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                                            Admin
+                                        </button>
+                                    </Link>
+                                )}
+                                <Link href="/profile">
+                                    <div className="size-9 rounded-full bg-gray-700 flex items-center justify-center text-white ring-2 ring-border-dark hover:ring-primary cursor-pointer" title={userProfile.full_name}>
+                                        <span className="material-symbols-outlined">person</span>
+                                    </div>
+                                </Link>
+                            </>
+                        ) : (
+                            <Link href="/login">
+                                <button className="flex items-center gap-2 bg-surface-dark hover:bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-border-dark">
+                                    Log In
+                                </button>
+                            </Link>
+                        )}
                     </div>
                 </header>
 

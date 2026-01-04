@@ -39,7 +39,8 @@ export async function proxy(request: NextRequest) {
     const path = request.nextUrl.pathname
 
     // Protected Routes Handling
-    const isProtectedRoute = path.startsWith('/dashboard') || path.startsWith('/profile') || path.startsWith('/admin')
+    // Dashboard is now public
+    const isProtectedRoute = path.startsWith('/profile') || path.startsWith('/admin')
     const isAdminRoute = path.startsWith('/admin')
 
     // Redirect unauthenticated users to login

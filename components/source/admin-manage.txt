@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Engineering Resources</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white">
+<div class="relative flex min-h-screen w-full flex-row overflow-hidden">
+<!-- Side Navigation -->
+<aside class="flex w-72 flex-col justify-between border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111318]">
+<div class="flex flex-col gap-6">
+<!-- User Profile / Branding -->
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="Admin user profile picture with abstract geometric background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCafazd36RbKzCVLghF9ubZ9GKrnFL3qocM2nCVToJXeP6JUop5felQ2q_5IA-ZBmHKGAhKgVPiBz17yz1sMMcVqGbXvh-7beSuDCS6z6SguO0AlPiUVux4jLzmhubb5Po2gXMR2ePdDIKKTIgxzY1o5MTuTJUeG3fZpXeblHiC1_couD9rk01UwpxvJq7Zt2nTNWoXaWRtHVINNDxU5CEzmxu4vmuy3ioXaD3lJ-USKq8fJsMGtEWCgClL0bkwHlvewOnn41eVrsE");'></div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-tight text-slate-900 dark:text-white">EngHub Admin</h1>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400">super_admin@enghub.edu</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1c1f27] dark:hover:text-white" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard Overview</p>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1c1f27] dark:hover:text-white" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">cloud_upload</span>
+<p class="text-sm font-medium leading-normal">Upload Resource</p>
+</a>
+<a class="group flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 text-primary dark:bg-primary dark:text-white" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">folder_open</span>
+<p class="text-sm font-medium leading-normal">Manage Files</p>
+</a>
+<div class="my-2 h-px bg-slate-200 dark:bg-slate-800"></div>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1c1f27] dark:hover:text-white" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">group</span>
+<p class="text-sm font-medium leading-normal">Students</p>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1c1f27] dark:hover:text-white" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<div class="px-2 pb-2">
+<button class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-500">
+<span aria-hidden="true" class="material-symbols-outlined text-[24px]">logout</span>
+<p class="text-sm font-medium leading-normal">Log Out</p>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex h-screen flex-1 flex-col overflow-y-auto bg-background-light dark:bg-[#101622]">
+<div class="container mx-auto max-w-7xl p-6 lg:p-10">
+<!-- Page Heading -->
+<div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+<div class="flex flex-col gap-1">
+<h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Manage Resources</h2>
+<p class="text-base font-normal text-slate-500 dark:text-slate-400">View, edit, and organize all uploaded academic materials.</p>
+</div>
+<button class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 py-2.5 text-sm font-bold tracking-wide text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#101622]">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Upload New Resource
+                    </button>
+</div>
+<!-- Filters & Search -->
+<div class="mb-6 grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#111318] lg:grid-cols-12">
+<!-- Search Bar -->
+<div class="lg:col-span-12 xl:col-span-4">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Search</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 pl-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white dark:placeholder:text-slate-500" placeholder="Search by title, code..." type="text"/>
+</div>
+</div>
+<!-- Filters -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-12 xl:col-span-8">
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Branch</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
+<option value="">All Branches</option>
+<option value="mechanical">Mechanical</option>
+<option value="electrical">Electrical</option>
+<option value="computer_science">Computer Science</option>
+<option value="civil">Civil</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Semester</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
+<option value="">All Semesters</option>
+<option value="1">Semester 1</option>
+<option value="2">Semester 2</option>
+<option value="3">Semester 3</option>
+<option value="4">Semester 4</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Type</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
+<option value="">All Types</option>
+<option value="pdf">PDF</option>
+<option value="video">Video</option>
+<option value="lab_manual">Lab Manual</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#111318]">
+<div class="overflow-x-auto">
+<table class="w-full min-w-[1000px] border-collapse text-left">
+<thead>
+<tr class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-[#1c1f27] dark:text-slate-400">
+<th class="px-6 py-4 font-semibold">Document Title</th>
+<th class="px-6 py-4 font-semibold">Subject Code &amp; Name</th>
+<th class="px-6 py-4 font-semibold">Branch</th>
+<th class="px-6 py-4 font-semibold">Semester</th>
+<th class="px-6 py-4 font-semibold">Type</th>
+<th class="px-6 py-4 font-semibold">Upload Date</th>
+<th class="px-6 py-4 text-right font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+<!-- Row 1 -->
+<tr class="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        Thermodynamics Notes
+                                    </td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        ME101 - Thermodynamics
+                                    </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30">
+                                            Mechanical
+                                        </span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">Sem 3</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[18px] text-red-500">picture_as_pdf</span>
+<span>PDF</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        Oct 24, 2023
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+<button class="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        Circuit Theory Basics
+                                    </td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        EE205 - Circuit Analysis
+                                    </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400 dark:ring-yellow-400/30">
+                                            Electrical
+                                        </span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">Sem 4</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[18px] text-purple-500">play_circle</span>
+<span>Video</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        Oct 22, 2023
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+<button class="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        Data Structures Lab
+                                    </td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        CS301 - Data Structures
+                                    </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 dark:bg-purple-900/30 dark:text-purple-400 dark:ring-purple-400/30">
+                                            Computer Science
+                                        </span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">Sem 3</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[18px] text-slate-400">description</span>
+<span>Lab Manual</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        Oct 20, 2023
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+<button class="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        Fluid Mechanics Pt 1
+                                    </td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        CE202 - Fluid Mechanics
+                                    </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20 dark:bg-orange-900/30 dark:text-orange-400 dark:ring-orange-400/30">
+                                            Civil
+                                        </span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">Sem 4</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[18px] text-slate-400">article</span>
+<span>Lecture Note</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        Oct 18, 2023
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+<button class="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        Calculus II Worksheet
+                                    </td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        MA102 - Mathematics II
+                                    </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 dark:bg-slate-700/50 dark:text-slate-300 dark:ring-slate-500/30">
+                                            Common
+                                        </span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-300">Sem 2</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[18px] text-green-500">assignment</span>
+<span>Worksheet</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        Oct 15, 2023
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+<button class="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+<div class="text-sm text-slate-500 dark:text-slate-400">
+                            Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">128</span> results
+                        </div>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-[#1c1f27] dark:text-slate-300 dark:hover:bg-slate-800">
+                                Previous
+                            </button>
+<button class="flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-[#1c1f27] dark:text-slate-300 dark:hover:bg-slate-800">
+                                Next
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

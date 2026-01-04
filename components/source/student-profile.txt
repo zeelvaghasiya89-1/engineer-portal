@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile - EngineerHub</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "card-dark": "#1C2333", // Slightly lighter than background for cards
+                        "card-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics in dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101622;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-[#282e39] bg-white dark:bg-[#1C2333] px-6 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight">EngineerHub</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-500 dark:text-[#9da6b9] hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Resources</a>
+<a class="text-slate-500 dark:text-[#9da6b9] hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Community</a>
+<a class="text-slate-500 dark:text-[#9da6b9] hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Forum</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search Bar -->
+<div class="hidden sm:flex items-center w-64 h-10 rounded-lg bg-slate-100 dark:bg-[#282e39] px-3 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+<span class="material-symbols-outlined text-slate-400">search</span>
+<input class="w-full bg-transparent border-none text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-0" placeholder="Search resources..." type="text"/>
+</div>
+<!-- Notifications -->
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282e39] text-slate-600 dark:text-white transition-colors relative">
+<span class="material-symbols-outlined filled">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-[#1C2333]"></span>
+</button>
+<!-- User Menu Avatar -->
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-slate-200 dark:border-[#282e39]" data-alt="User profile thumbnail showing a young man smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDa1Xpj_jHaYQ1A3IFN3c2bDkdx4vrhaZOr5vw0NkEJJWgJP3afjn5x8nXMe5rhGegre1QFPZbU5fwV_zNIP8P9pUVF3QrzrWPNmBuUWu740bX91mhRIt8sW9jDLOH039JVc0kug1GGKCu6yrIoEO1DZSlCMhvMH5kIIXO8MpzJHu2wZGt7Q2wFfPVnO45R69BX1KDFoG8wkUhvAXUIJdVr20DrTH3VKw9tioj-49W9TXW4QYQT0iGteQyZ-O_2cmScUuUj6-pRzfuz");'>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<div class="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
+<div class="flex flex-col lg:flex-row gap-6">
+<!-- LEFT COLUMN: Sidebar (Sticky on Desktop) -->
+<aside class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
+<!-- Profile Identity Card -->
+<div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-slate-200 dark:border-[#282e39] flex flex-col items-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-blue-600 to-primary opacity-20 dark:opacity-30"></div>
+<div class="relative mt-8 group cursor-pointer">
+<div class="size-28 rounded-full bg-cover bg-center border-4 border-white dark:border-card-dark shadow-md" data-alt="Large profile picture of Alex Chen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBJxEA03cnmpSoazHpkjOKXnz4mv1aDprsotQsU84m1lkCRTLSuj_hgfNIQjVC4TrJtaFtoE6YXyN3gvHC7wFQVOD4X1DN-5CQUNQVqu6hU-Zb2GysJe0hWtAmPVlc7L7Yw33cA6SAjvmiL0z2eRzNq8NOkuGSJAqyzo2UZBD0h-TclIH9vzAmSZuj33R3mPQ3XYAwPmKRcSmhJlr1Ln5ZY9uTYppdF70u2ebQ8t1t-rSmMVpAL3-YKNiIjJktdZXPal4Z87xFz40y");'>
+</div>
+<div class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">edit</span>
+</div>
+</div>
+<div class="mt-4 text-center">
+<h1 class="text-xl font-bold text-slate-900 dark:text-white">Alex Chen</h1>
+<p class="text-sm text-slate-500 dark:text-[#9da6b9]">Civil Engineering Student</p>
+<div class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]">school</span>
+                            Student
+                        </div>
+</div>
+<div class="grid grid-cols-2 gap-3 w-full mt-6 pt-6 border-t border-slate-100 dark:border-[#282e39]">
+<div class="flex flex-col items-center p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-[#282e39]/50 transition-colors">
+<span class="text-lg font-bold text-slate-900 dark:text-white">12</span>
+<span class="text-xs text-slate-500 dark:text-[#9da6b9]">Uploads</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-[#282e39]/50 transition-colors">
+<span class="text-lg font-bold text-slate-900 dark:text-white">450</span>
+<span class="text-xs text-slate-500 dark:text-[#9da6b9]">Reputation</span>
+</div>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="bg-white dark:bg-card-dark rounded-xl p-3 shadow-sm border border-slate-200 dark:border-[#282e39]">
+<ul class="flex flex-col gap-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                                Overview
+                            </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-50 dark:hover:bg-[#282e39] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                                My Resources
+                            </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-50 dark:hover:bg-[#282e39] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined">security</span>
+                                Security
+                            </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-50 dark:hover:bg-[#282e39] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined">history</span>
+                                Activity Log
+                            </a>
+</li>
+</ul>
+</nav>
+<!-- Storage Widget -->
+<div class="bg-gradient-to-br from-primary to-blue-700 rounded-xl p-6 text-white shadow-lg relative overflow-hidden hidden lg:block">
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10">cloud_upload</span>
+<h3 class="font-bold text-lg mb-1">Contribute More!</h3>
+<p class="text-sm text-blue-100 mb-4">Upload verified notes to earn reputation badges.</p>
+<button class="w-full py-2 bg-white text-primary text-sm font-bold rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
+                        Upload Resource
+                    </button>
+</div>
+</aside>
+<!-- RIGHT COLUMN: Main Content -->
+<main class="flex-1 flex flex-col gap-6 min-w-0">
+<!-- Header & Breadcrumbs -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-[#9da6b9]">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Users</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-slate-900 dark:text-white font-medium">Profile</span>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-white bg-white dark:bg-[#282e39] border border-slate-200 dark:border-transparent rounded-lg hover:bg-slate-50 dark:hover:bg-[#323946] transition-colors">
+<span class="material-symbols-outlined text-[18px]">lock_reset</span>
+                            Change Password
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-600 transition-colors shadow-sm shadow-blue-500/20">
+<span class="material-symbols-outlined text-[18px]">edit_square</span>
+                            Edit Profile
+                        </button>
+</div>
+</div>
+<!-- Personal Information Card -->
+<section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-[#282e39] overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-[#282e39] flex items-center justify-between">
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">Academic Information</h3>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">University ID</span>
+<p class="text-base font-medium text-slate-900 dark:text-white">2021-CIV-045</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">Branch</span>
+<p class="text-base font-medium text-slate-900 dark:text-white">Civil Engineering</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">Semester</span>
+<p class="text-base font-medium text-slate-900 dark:text-white">6th Semester</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">Email Address</span>
+<p class="text-base font-medium text-slate-900 dark:text-white">alex.chen@university.edu</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">Join Date</span>
+<p class="text-base font-medium text-slate-900 dark:text-white">August 15, 2021</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-[#9da6b9]">Status</span>
+<span class="inline-flex items-center w-fit gap-1.5 px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-500 text-sm font-medium">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                Active
+                            </span>
+</div>
+</div>
+</section>
+<!-- Recent Resources Table -->
+<section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-[#282e39] overflow-hidden flex flex-col">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-[#282e39] flex items-center justify-between">
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">My Resources</h3>
+<a class="text-sm font-medium text-primary hover:text-blue-400" href="#">View All</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-[#282e39]/50 text-slate-500 dark:text-[#9da6b9] text-xs uppercase tracking-wider font-semibold">
+<th class="px-6 py-3 font-semibold">Resource Name</th>
+<th class="px-6 py-3 font-semibold">Subject</th>
+<th class="px-6 py-3 font-semibold">Date</th>
+<th class="px-6 py-3 font-semibold">Status</th>
+<th class="px-6 py-3 text-right font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-[#282e39]">
+<tr class="group hover:bg-slate-50 dark:hover:bg-[#282e39]/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded flex items-center justify-center bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Fluid Mechanics Notes Ch.1-3</p>
+<p class="text-xs text-slate-500 dark:text-[#9da6b9]">PDF • 4.5 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Fluid Mechanics</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Oct 24, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                                            Approved
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#282e39]">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-slate-50 dark:hover:bg-[#282e39]/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded flex items-center justify-center bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Structural Analysis Q&amp;A</p>
+<p class="text-xs text-slate-500 dark:text-[#9da6b9]">DOCX • 2.1 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Structures</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Sep 15, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                                            Approved
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#282e39]">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-slate-50 dark:hover:bg-[#282e39]/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded flex items-center justify-center bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">
+<span class="material-symbols-outlined text-[20px]">image</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Site Survey Diagrams</p>
+<p class="text-xs text-slate-500 dark:text-[#9da6b9]">JPG • 8.0 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Surveying</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">Aug 30, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
+                                            Pending
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#282e39]">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Activity Timeline -->
+<section class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-[#282e39] overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-[#282e39]">
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">Recent Activity</h3>
+</div>
+<div class="p-6">
+<div class="relative pl-6 border-l-2 border-slate-200 dark:border-[#282e39] space-y-8">
+<!-- Timeline Item 1 -->
+<div class="relative">
+<span class="absolute -left-[31px] top-1 flex items-center justify-center size-8 rounded-full bg-blue-100 dark:bg-primary/20 text-primary border-4 border-white dark:border-card-dark">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</span>
+<div class="flex flex-col gap-1">
+<p class="text-sm text-slate-900 dark:text-white">Downloaded <span class="font-medium">"Thermodynamics Ch.4"</span></p>
+<span class="text-xs text-slate-500 dark:text-[#9da6b9]">2 hours ago</span>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative">
+<span class="absolute -left-[31px] top-1 flex items-center justify-center size-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-4 border-white dark:border-card-dark">
+<span class="material-symbols-outlined text-[16px]">cloud_upload</span>
+</span>
+<div class="flex flex-col gap-1">
+<p class="text-sm text-slate-900 dark:text-white">Uploaded new resource <span class="font-medium">"Surveying Field Notes"</span></p>
+<span class="text-xs text-slate-500 dark:text-[#9da6b9]">1 day ago</span>
+</div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="relative">
+<span class="absolute -left-[31px] top-1 flex items-center justify-center size-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-4 border-white dark:border-card-dark">
+<span class="material-symbols-outlined text-[16px]">account_circle</span>
+</span>
+<div class="flex flex-col gap-1">
+<p class="text-sm text-slate-900 dark:text-white">Updated profile picture</p>
+<span class="text-xs text-slate-500 dark:text-[#9da6b9]">3 days ago</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+</body></html>

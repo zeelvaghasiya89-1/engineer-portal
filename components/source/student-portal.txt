@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EngineerHub Resource Portal</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "primary-hover": "#1d66f0",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111318",
+                        "surface-dark": "#1a1d24",
+                        "border-dark": "#282e39",
+                        "text-secondary": "#9da6b9"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111318;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #282e39;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3b4354;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white overflow-hidden h-screen flex flex-col">
+<!-- Header -->
+<header class="flex h-16 shrink-0 items-center justify-between border-b border-solid border-border-dark bg-background-dark px-6 z-20 relative">
+<!-- Logo -->
+<div class="flex items-center gap-3 w-64">
+<div class="flex size-8 items-center justify-center rounded bg-primary text-white">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">EngineerHub</h2>
+</div>
+<!-- Central Search -->
+<div class="flex flex-1 max-w-2xl px-4">
+<div class="flex w-full items-center rounded-lg bg-border-dark h-10 group focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+<div class="flex items-center justify-center pl-3 text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex-1 bg-transparent border-none text-white placeholder-text-secondary text-sm px-3 focus:ring-0 focus:outline-none h-full w-full" placeholder="Search notes, manuals, exams..."/>
+<div class="pr-2 hidden sm:flex text-xs text-text-secondary font-mono bg-surface-dark/50 rounded px-1.5 py-0.5 border border-white/5 mr-2">⌘K</div>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 w-64 justify-end">
+<button class="hidden lg:flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover transition-colors h-9 px-4 text-white text-sm font-semibold shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+<span class="truncate">Upload</span>
+</button>
+<div class="h-8 w-[1px] bg-border-dark mx-1"></div>
+<button class="text-text-secondary hover:text-white transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-background-dark"></span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-border-dark cursor-pointer" data-alt="User profile avatar showing a smiling student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAEA51WDg2osSKRWVl6cS7oPcC1m9Ho8YLJCeHxFrT_sc40Tznyz5OP5Cdkwj8WRm2fIU2OM37y3YMpbfGxH_lFxth0KwAER95S1MtTR4ldsN4YBKDAPlgbX0pCXgf1PgZt2v1jsQCburc9XmIZeNm0qkeyWYlFGGrIgq208JCJteohzUDuVgiyth0QZ02aItO0aczUk5AeXcetnAfTWczgGD-Iu-JAIymzNUpHfas1qqTQ0qgVCwia1u3ZT3QkSLVNoC9-8B6OEGwx");'></div>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex flex-1 overflow-hidden relative">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 border-r border-border-dark bg-background-dark flex flex-col overflow-y-auto custom-scrollbar pb-6">
+<!-- Filters: Branch -->
+<div class="px-5 pt-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider font-display">Branch</h3>
+<button class="text-[10px] text-primary hover:underline">Clear</button>
+</div>
+<div class="flex flex-col gap-1">
+<label class="group flex items-center gap-3 p-2 rounded-lg hover:bg-surface-dark cursor-pointer transition-colors">
+<div class="relative flex items-center">
+<input checked="" class="peer h-4 w-4 rounded border-gray-600 bg-transparent text-primary focus:ring-0 focus:ring-offset-0 transition-all checked:bg-primary checked:border-primary" type="checkbox"/>
+</div>
+<span class="text-sm text-gray-300 font-medium group-hover:text-white">Computer Science</span>
+<span class="ml-auto text-xs text-text-secondary font-mono">124</span>
+</label>
+<label class="group flex items-center gap-3 p-2 rounded-lg hover:bg-surface-dark cursor-pointer transition-colors">
+<div class="relative flex items-center">
+<input class="peer h-4 w-4 rounded border-gray-600 bg-transparent text-primary focus:ring-0 focus:ring-offset-0 transition-all checked:bg-primary checked:border-primary" type="checkbox"/>
+</div>
+<span class="text-sm text-gray-300 font-medium group-hover:text-white">Mechanical</span>
+<span class="ml-auto text-xs text-text-secondary font-mono">85</span>
+</label>
+<label class="group flex items-center gap-3 p-2 rounded-lg hover:bg-surface-dark cursor-pointer transition-colors">
+<div class="relative flex items-center">
+<input class="peer h-4 w-4 rounded border-gray-600 bg-transparent text-primary focus:ring-0 focus:ring-offset-0 transition-all checked:bg-primary checked:border-primary" type="checkbox"/>
+</div>
+<span class="text-sm text-gray-300 font-medium group-hover:text-white">Civil</span>
+<span class="ml-auto text-xs text-text-secondary font-mono">42</span>
+</label>
+<label class="group flex items-center gap-3 p-2 rounded-lg hover:bg-surface-dark cursor-pointer transition-colors">
+<div class="relative flex items-center">
+<input class="peer h-4 w-4 rounded border-gray-600 bg-transparent text-primary focus:ring-0 focus:ring-offset-0 transition-all checked:bg-primary checked:border-primary" type="checkbox"/>
+</div>
+<span class="text-sm text-gray-300 font-medium group-hover:text-white">Electrical</span>
+<span class="ml-auto text-xs text-text-secondary font-mono">67</span>
+</label>
+<label class="group flex items-center gap-3 p-2 rounded-lg hover:bg-surface-dark cursor-pointer transition-colors">
+<div class="relative flex items-center">
+<input class="peer h-4 w-4 rounded border-gray-600 bg-transparent text-primary focus:ring-0 focus:ring-offset-0 transition-all checked:bg-primary checked:border-primary" type="checkbox"/>
+</div>
+<span class="text-sm text-gray-300 font-medium group-hover:text-white">Electronics</span>
+<span class="ml-auto text-xs text-text-secondary font-mono">39</span>
+</label>
+</div>
+</div>
+<div class="h-px bg-border-dark mx-5 my-4"></div>
+<!-- Filters: Semester -->
+<div class="px-5">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider font-display mb-3">Semester</h3>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg bg-surface-dark border border-border-dark text-sm text-white px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer">
+<option>Select Semester</option>
+<option>Semester 1</option>
+<option>Semester 2</option>
+<option>Semester 3</option>
+<option>Semester 4</option>
+<option>Semester 5</option>
+<option>Semester 6</option>
+<option>Semester 7</option>
+<option>Semester 8</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="h-px bg-border-dark mx-5 my-4"></div>
+<!-- Filters: Resource Type -->
+<div class="px-5">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider font-display mb-3">Resource Type</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-medium hover:bg-primary hover:text-white transition-all">Notes</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-dark text-text-secondary border border-border-dark text-xs font-medium hover:border-gray-500 hover:text-white transition-all">Papers</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-dark text-text-secondary border border-border-dark text-xs font-medium hover:border-gray-500 hover:text-white transition-all">Labs</button>
+<button class="px-3 py-1.5 rounded-full bg-surface-dark text-text-secondary border border-border-dark text-xs font-medium hover:border-gray-500 hover:text-white transition-all">Books</button>
+</div>
+</div>
+<!-- Promo/Help -->
+<div class="mt-auto p-5">
+<div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-white/5">
+<div class="flex items-center gap-2 mb-2 text-white">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span class="text-sm font-bold">Need Help?</span>
+</div>
+<p class="text-xs text-text-secondary mb-3 leading-relaxed">Can't find a specific resource? Request it from the community.</p>
+<button class="w-full py-1.5 rounded bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors">Request Resource</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto custom-scrollbar bg-background-light dark:bg-[#0b0d11]">
+<div class="max-w-[1400px] mx-auto p-6 lg:p-10">
+<!-- Hero Section -->
+<div class="relative overflow-hidden rounded-2xl bg-[#135bec] p-8 mb-10 group" data-alt="Abstract blue gradient pattern representing digital flow">
+<!-- Background Elements -->
+<div class="absolute inset-0 bg-gradient-to-r from-[#101622] via-[#135bec]/80 to-[#135bec] opacity-90"></div>
+<div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+<div class="absolute right-10 bottom-10 h-32 w-32 rounded-full bg-purple-500/20 blur-2xl"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-xl">
+<div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur-md mb-4 border border-white/10">
+<span class="size-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                                Exam Season Live
+                            </div>
+<h1 class="text-3xl font-bold text-white mb-2 tracking-tight">Mid-Sem Prep: Digital Logic Design</h1>
+<p class="text-blue-100 text-sm md:text-base leading-relaxed">Curated list of top-rated handwritten notes, past year papers, and lab manuals specifically for the upcoming mid-semester examinations.</p>
+</div>
+<button class="shrink-0 rounded-lg bg-white text-primary hover:bg-gray-50 px-5 py-2.5 text-sm font-bold shadow-lg transition-colors flex items-center gap-2">
+                            View Collection
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+                        Trending Resources
+                    </h2>
+<div class="flex items-center gap-2 text-sm text-text-secondary">
+<span>Sort by:</span>
+<button class="flex items-center gap-1 font-medium text-white hover:text-primary">
+                            Popularity
+                            <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Resource Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+<!-- Card 1 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-blue-400 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Data Structures &amp; Algorithms Notes (Handwritten)</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                Prof. R. Sharma
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-blue-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-blue-400 border border-blue-500/20">CSE</span>
+<span class="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">PDF</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">2.4 MB</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">science</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Thermodynamics Lab Manual v2.0</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                Dr. A. K. Gupta
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-orange-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-orange-400 border border-orange-500/20">MECH</span>
+<span class="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">DOCX</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">1.1 MB</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">article</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Fluid Mechanics - End Sem Paper 2023</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">school</span>
+                                University Exam Cell
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-emerald-400 border border-emerald-500/20">CIVIL</span>
+<span class="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">PDF</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">856 KB</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-pink-400 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Circuit Theory &amp; Network Analysis</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                S. K. Das
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-pink-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-pink-400 border border-pink-500/20">EEE</span>
+<span class="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">PDF</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">5.1 MB</span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">developer_board</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Microprocessors 8085 Cheat Sheet</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">group</span>
+                                Student Council
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-cyan-400 border border-cyan-500/20">ECE</span>
+<span class="inline-flex items-center rounded bg-yellow-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-yellow-400 border border-yellow-500/20">IMG</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">1.8 MB</span>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-dark bg-surface-dark p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#252a35] text-blue-400 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">code</span>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-white" title="Preview">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-md hover:bg-white/10 text-text-secondary hover:text-primary" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">Operating Systems: Synchronization</h3>
+<p class="mt-1.5 text-xs text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                Dr. Peterson
+                            </p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded bg-blue-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-blue-400 border border-blue-500/20">CSE</span>
+<span class="inline-flex items-center rounded bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-red-400 border border-red-500/20">PPT</span>
+</div>
+<span class="font-mono text-[10px] text-text-secondary">3.6 MB</span>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="flex justify-center mb-8">
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-border-dark bg-surface-dark text-text-secondary text-sm font-medium hover:text-white hover:border-gray-500 transition-all">
+                        Load more resources
+                        <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

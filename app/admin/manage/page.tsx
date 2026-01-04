@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Loader2 } from 'lucide-react'
+import { Loader2, FileText, Video, File, Search, ChevronDown, Trash2, Edit2, Plus } from 'lucide-react'
+import Link from 'next/link'
 
 // Types
 type Resource = {
@@ -26,6 +27,10 @@ export default function AdminManage() {
     const [filterBranch, setFilterBranch] = useState('')
     const [filterSemester, setFilterSemester] = useState('')
     const [filterType, setFilterType] = useState('')
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 7
 
     // Edit Modal State
     const [editingResource, setEditingResource] = useState<Resource | null>(null)
@@ -58,8 +63,6 @@ export default function AdminManage() {
 
         try {
             // 1. Delete from Storage
-            // Extract file path from URL. Assuming standard Supabase Storage URL format.
-            // URL: .../storage/v1/object/public/eng-docs/filename.pdf
             const fileUrlParts = resource.file_url.split('/eng-docs/')
             if (fileUrlParts.length > 1) {
                 const filePath = fileUrlParts[1]
@@ -111,7 +114,6 @@ export default function AdminManage() {
 
             if (error) throw error
 
-            // Update local state
             setResources(resources.map(r =>
                 r.id === editingResource.id
                     ? { ...r, title: editTitle, subject_code: editSubjectCode }
@@ -139,147 +141,259 @@ export default function AdminManage() {
         return matchesSearch && matchesBranch && matchesSemester && matchesType
     })
 
+    // Pagination Logic
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = filteredResources.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(filteredResources.length / itemsPerPage)
+
+    const getBranchColor = (branch: string) => {
+        switch (branch) {
+            case 'Computer Science': return 'bg-purple-900/40 text-purple-300 border-purple-800'
+            case 'Mechanical': return 'bg-blue-900/40 text-blue-300 border-blue-800'
+            case 'Civil': return 'bg-orange-900/40 text-orange-300 border-orange-800'
+            case 'Electrical': return 'bg-yellow-900/40 text-yellow-300 border-yellow-800'
+            default: return 'bg-gray-800 text-gray-300 border-gray-700'
+        }
+    }
+
+    const getTypeIcon = (type: string) => {
+        switch (type) {
+            case 'Video': return <Video className="w-4 h-4 text-purple-400" />
+            case 'Notes': return <FileText className="w-4 h-4 text-red-400" />
+            default: return <File className="w-4 h-4 text-blue-400" />
+        }
+    }
+
+    if (loading) return (
+        <div className="flex-1 flex justify-center items-center h-full bg-[#0B0E14] text-white">
+            <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+        </div>
+    )
+
     return (
-        <div className="flex-1 overflow-y-auto bg-background-light dark:bg-[#101622] h-full p-8 pb-20">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white">Manage Resources</h2>
+        <div className="flex-1 overflow-y-auto bg-[#0B0E14] h-full p-8 text-white font-sans">
+            <div className="max-w-[1400px] mx-auto">
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Manage Resources</h1>
+                        <p className="text-gray-400 text-sm">View, edit, and organize all uploaded academic materials.</p>
+                    </div>
+                    <Link href="/admin/upload">
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+                            <Plus size={18} />
+                            Upload New Resource
+                        </button>
+                    </Link>
                 </div>
 
                 {message && (
-                    <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                    <div className={`p-4 mb-6 rounded-lg border ${message.type === 'success' ? 'bg-green-900/20 text-green-400 border-green-800' : 'bg-red-900/20 text-red-400 border-red-800'}`}>
                         {message.text}
                     </div>
                 )}
 
                 {/* Filters */}
-                <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#111318] lg:grid-cols-12 mb-6">
-                    <div className="lg:col-span-12 xl:col-span-3">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white"
-                        />
-                    </div>
-                    <div className="lg:col-span-6 xl:col-span-3">
-                        <select value={filterBranch} onChange={e => setFilterBranch(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
-                            <option value="">All Branches</option>
-                            <option value="Computer Science">Computer Science</option>
-                            <option value="Mechanical">Mechanical</option>
-                            <option value="Civil">Civil</option>
-                            <option value="Electrical">Electrical</option>
-                            <option value="Electronics">Electronics</option>
-                        </select>
-                    </div>
-                    <div className="lg:col-span-6 xl:col-span-3">
-                        <select value={filterSemester} onChange={e => setFilterSemester(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
-                            <option value="">All Semesters</option>
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>Semester {s}</option>)}
-                        </select>
-                    </div>
-                    <div className="lg:col-span-6 xl:col-span-3">
-                        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-[#1c1f27] dark:text-white">
-                            <option value="">All Types</option>
-                            {['Notes', 'Papers', 'Labs', 'Books'].map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
+                <div className="bg-[#11161D] p-5 rounded-xl border border-gray-800 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="md:col-span-3">
+                            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">Search</label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by title, code..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2 pl-9 pr-4 text-sm text-gray-200 outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                        </div>
+                        <div className="md:col-span-3">
+                            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">Branch</label>
+                            <div className="relative">
+                                <select
+                                    value={filterBranch}
+                                    onChange={(e) => setFilterBranch(e.target.value)}
+                                    className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer"
+                                >
+                                    <option value="">All Branches</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Electronics">Electronics</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                            </div>
+                        </div>
+                        <div className="md:col-span-3">
+                            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">Semester</label>
+                            <div className="relative">
+                                <select
+                                    value={filterSemester}
+                                    onChange={(e) => setFilterSemester(e.target.value)}
+                                    className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer"
+                                >
+                                    <option value="">All Semesters</option>
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                            </div>
+                        </div>
+                        <div className="md:col-span-3">
+                            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">Type</label>
+                            <div className="relative">
+                                <select
+                                    value={filterType}
+                                    onChange={(e) => setFilterType(e.target.value)}
+                                    className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer"
+                                >
+                                    <option value="">All Types</option>
+                                    {['Notes', 'Papers', 'Labs', 'Books'].map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#111318]">
+                {/* Table Section */}
+                <div className="bg-[#11161D] rounded-xl border border-gray-800 overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[1000px] border-collapse text-left">
+                        <table className="w-full min-w-[800px]">
                             <thead>
-                                <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-[#1c1f27] dark:text-slate-400">
-                                    <th className="px-6 py-4 font-semibold">Document Title</th>
-                                    <th className="px-6 py-4 font-semibold">Subject</th>
-                                    <th className="px-6 py-4 font-semibold">Branch</th>
-                                    <th className="px-6 py-4 font-semibold">Semester</th>
-                                    <th className="px-6 py-4 font-semibold">Type</th>
-                                    <th className="px-6 py-4 text-right font-semibold">Actions</th>
+                                <tr className="border-b border-gray-800 bg-[#161B22]">
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Document Title</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Subject Code & Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Branch</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Semester</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Upload Date</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-                                {loading ? (
-                                    <tr><td colSpan={6} className="text-center py-10 text-gray-500">Loading resources...</td></tr>
-                                ) : filteredResources.length === 0 ? (
-                                    <tr><td colSpan={6} className="text-center py-10 text-gray-500">No resources found.</td></tr>
-                                ) : (
-                                    filteredResources.map(r => (
-                                        <tr key={r.id} className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{r.title}</td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{r.subject_code}</td>
+                            <tbody className="divide-y divide-gray-800">
+                                {currentItems.length > 0 ? (
+                                    currentItems.map((r) => (
+                                        <tr key={r.id} className="hover:bg-[#161B22]/50 transition-colors group">
                                             <td className="px-6 py-4">
-                                                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                <div className="font-semibold text-gray-200">{r.title}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-300">{r.subject_code}</div>
+                                                <div className="text-xs text-gray-500 capitalize">{r.title.length > 20 ? r.title.substring(0, 20) + '...' : r.title}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded border text-xs font-medium ${getBranchColor(r.branch)}`}>
                                                     {r.branch}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">Sem {r.semester}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{r.type}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-300">
+                                                Sem {r.semester}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    {getTypeIcon(r.type)}
+                                                    <span className="text-sm text-gray-300">{r.type}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-400">
+                                                {new Date(r.created_at).toLocaleDateString()}
+                                            </td>
                                             <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => openEditModal(r)}
-                                                        className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-primary dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-primary"
+                                                        className="p-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-blue-400 transition-colors"
                                                     >
-                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                        <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(r)}
                                                         disabled={deleting === r.id}
-                                                        className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-500 disabled:opacity-50"
+                                                        className="p-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
                                                     >
-                                                        {deleting === r.id ? <Loader2 className="animate-spin size-5" /> : <span className="material-symbols-outlined text-[20px]">delete</span>}
+                                                        {deleting === r.id ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                            No resources found matching your criteria.
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Footer / Pagination */}
+                    <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+                        <span className="text-sm text-gray-500">
+                            Showing <span className="font-medium text-white">{indexOfFirstItem + 1}</span> to <span className="font-medium text-white">{Math.min(indexOfLastItem, filteredResources.length)}</span> of <span className="font-medium text-white">{filteredResources.length}</span> results
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1.5 rounded border border-gray-700 text-sm text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className="px-3 py-1.5 rounded border border-gray-700 text-sm text-gray-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Edit Modal */}
+            {/* Edit Modal (Preserved Functionality, Dark Styled) */}
             {editingResource && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1c1f27] rounded-xl shadow-2xl w-full max-w-md p-6 m-4 border border-slate-200 dark:border-slate-800">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Edit Resource</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#161B22] rounded-xl shadow-2xl w-full max-w-md p-6 m-4 border border-gray-700">
+                        <h3 className="text-xl font-bold text-white mb-4">Edit Resource</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-500 mb-1">Title</label>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={editTitle}
                                     onChange={e => setEditTitle(e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-black/20 dark:text-white"
+                                    className="w-full rounded-lg border border-gray-600 bg-[#0B0E14] px-4 py-2 outline-none focus:border-blue-500 text-white transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-500 mb-1">Subject Code</label>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">Subject Code</label>
                                 <input
                                     type="text"
                                     value={editSubjectCode}
                                     onChange={e => setEditSubjectCode(e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-black/20 dark:text-white"
+                                    className="w-full rounded-lg border border-gray-600 bg-[#0B0E14] px-4 py-2 outline-none focus:border-blue-500 text-white transition-colors"
                                 />
                             </div>
                         </div>
                         <div className="flex justify-end gap-3 mt-6">
                             <button
                                 onClick={() => setEditingResource(null)}
-                                className="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                className="px-4 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleEditSave}
                                 disabled={savingEdit}
-                                className="px-4 py-2 rounded-lg bg-primary text-white font-medium hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
+                                className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
                             >
                                 {savingEdit && <Loader2 className="animate-spin size-4" />}
                                 Save Changes

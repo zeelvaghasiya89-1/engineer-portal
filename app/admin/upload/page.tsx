@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function AdminUpload() {
+    const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [file, setFile] = useState<File | null>(null)
 
@@ -17,6 +19,17 @@ export default function AdminUpload() {
     const [type, setType] = useState('Lecture Notes')
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+    // Check auth on mount
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push('/login')
+            }
+        }
+        checkAuth()
+    }, [router])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -35,6 +48,12 @@ export default function AdminUpload() {
         setMessage(null)
 
         try {
+            // 0. Get User
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                throw new Error('You must be logged in to upload.')
+            }
+
             // 1. Upload File
             const fileExt = file.name.split('.').pop()
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
@@ -59,38 +78,18 @@ export default function AdminUpload() {
                 subject_code: subjectCode,
                 type,
                 file_url: publicUrl,
-                // uploaded_by handled by default if RLS uses auth.uid(), but request said specific column.
-                // Supabase client usually doesn't auto-fill this unless trigger.
-                // Let's get current user.
+                uploaded_by: user.id // Explicitly set uploaded_by
             })
 
-            // We need to fetch user again to put in uploaded_by?
-            // Actually, let's wait for user logic validation.
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                // Retry insert with uploaded_by if it failed or if schema requires it (users said: uploaded_by (uuid))
-                // Actually, I should have included it in the first call.
-                // Let's redo the DB insert part safely.
-                await supabase.from('resources').insert({
-                    title,
-                    branch,
-                    semester: Number(semester),
-                    subject_code: subjectCode,
-                    type,
-                    file_url: publicUrl,
-                    uploaded_by: user.id
-                })
-            } else {
-                throw new Error('User not authenticated')
-            }
+            if (dbError) throw dbError
 
             setMessage({ type: 'success', text: 'Resource uploaded successfully!' })
+
             // Clear form
             setTitle('')
             setSubjectCode('')
             setFile(null)
-            // Reset file input value manually if needed, or just let React handle it via key or ref.
-            // Simple way:
+
             const fileInput = document.getElementById('file-upload') as HTMLInputElement | null
             if (fileInput) {
                 fileInput.value = ''

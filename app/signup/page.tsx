@@ -34,14 +34,22 @@ export default function SignUpPage() {
             if (authError) throw authError
 
             if (authData.user) {
-                // 2. Create Profile (Optional: Trigger usually handles this, but we can be safe)
-                // If you have a Trigger in Supabase to create a profile on auth.users insert, you can skip this.
-                // Assuming we might need to verify or handle manual insertion if trigger fails or doesn't exist.
-                // For now, let's assume the Trigger exists as per standard Supabase patterns, 
-                // but if not, we would insert into 'profiles' here.
+                // 2. Create Profile explicit to ensure it exists
+                // We do this to ensure consistent behavior if triggers are partial or missing
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert({
+                        id: authData.user.id,
+                        full_name: fullName,
+                        role: 'student', // Default role
+                        email: email
+                    })
 
-                // Let's redirect to login with a success message or directly to dashboard if email confirmation isn't required.
-                // If email confirmation is off:
+                if (profileError) {
+                    // Log error but don't fail signup completely if auth worked
+                    console.error('Profile creation error:', profileError)
+                }
+
                 router.push('/dashboard')
                 router.refresh()
             }

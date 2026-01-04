@@ -60,6 +60,15 @@ export default function Dashboard() {
                     // Smart Filter Defaults (only if user logged in with defaults)
                     if (selectedBranch === '') setSelectedBranch(profile.branch || '')
                     if (selectedSemester === '') setSelectedSemester(profile.semester || '')
+                } else {
+                    // Fallback if no profile row exists yet
+                    setUserProfile({
+                        id: user.id,
+                        full_name: user.user_metadata?.full_name || 'User',
+                        branch: '',
+                        semester: 0,
+                        role: 'student' // Default to student
+                    })
                 }
             }
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2 } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard } from 'lucide-react'
 import ManageBranchesModal from '@/app/components/ManageBranchesModal'
 
 // Types
@@ -191,6 +191,38 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8">
+                    {/* Navigation Links */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-4 px-2">
+                            <Menu className="size-4 text-gray-400" />
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Menu</h3>
+                        </div>
+                        <div className="space-y-1">
+                            <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                                <span className="material-symbols-outlined text-[18px]">home</span>
+                                Home
+                            </Link>
+                            <button
+                                onClick={() => {
+                                    setSelectedBranch('')
+                                    setSelectedSemester('')
+                                    setSelectedType('')
+                                    setSearchQuery('')
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-blue-600/10 text-blue-400 border border-blue-600/20 transition-colors"
+                            >
+                                <FileText size={18} />
+                                Documents
+                            </button>
+                            {userProfile?.role === 'admin' && (
+                                <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                                    <LayoutDashboard size={18} />
+                                    Admin Dashboard
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Branch Filter */}
                     <div>
                         <div className="flex items-center justify-between mb-4 px-2">

@@ -347,7 +347,9 @@ export default function Dashboard() {
                                     <div className="flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-gray-800">
                                         <div className="text-right hidden sm:block">
                                             <p className="text-sm font-medium text-white">{userProfile.full_name}</p>
-                                            <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
+                                            <p className="text-xs text-gray-500 capitalize">
+                                                {userProfile.role} (Debug: {userProfile.role})
+                                            </p>
                                         </div>
                                         <div className="size-8 lg:size-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white ring-2 ring-gray-800 hover:ring-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-500/20">
                                             <User size={18} />

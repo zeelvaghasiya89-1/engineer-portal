@@ -17,8 +17,14 @@ type Resource = {
     created_at: string
 }
 
+type Branch = {
+    id: string
+    name: string
+}
+
 export default function AdminManage() {
     const [resources, setResources] = useState<Resource[]>([])
+    const [branches, setBranches] = useState<Branch[]>([]) // Dynamic branches
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -41,17 +47,19 @@ export default function AdminManage() {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
     useEffect(() => {
-        fetchResources()
+        fetchData()
     }, [])
 
-    const fetchResources = async () => {
+    const fetchData = async () => {
         setLoading(true)
-        const { data, error } = await supabase
-            .from('resources')
-            .select('*')
-            .order('created_at', { ascending: false })
+        // Parallel fetch
+        const [resRes, resBranches] = await Promise.all([
+            supabase.from('resources').select('*').order('created_at', { ascending: false }),
+            supabase.from('branches').select('*').order('name')
+        ])
 
-        if (data) setResources(data)
+        if (resRes.data) setResources(resRes.data)
+        if (resBranches.data) setBranches(resBranches.data)
         setLoading(false)
     }
 
@@ -148,13 +156,8 @@ export default function AdminManage() {
     const totalPages = Math.ceil(filteredResources.length / itemsPerPage)
 
     const getBranchColor = (branch: string) => {
-        switch (branch) {
-            case 'Computer Science': return 'bg-purple-900/40 text-purple-300 border-purple-800'
-            case 'Mechanical': return 'bg-blue-900/40 text-blue-300 border-blue-800'
-            case 'Civil': return 'bg-orange-900/40 text-orange-300 border-orange-800'
-            case 'Electrical': return 'bg-yellow-900/40 text-yellow-300 border-yellow-800'
-            default: return 'bg-gray-800 text-gray-300 border-gray-700'
-        }
+        // Simple hash fallback
+        return 'bg-gray-800 text-gray-300 border-gray-700'
     }
 
     const getTypeIcon = (type: string) => {
@@ -224,11 +227,7 @@ export default function AdminManage() {
                                     className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer"
                                 >
                                     <option value="">All Branches</option>
-                                    <option value="Computer Science">Computer Science</option>
-                                    <option value="Mechanical">Mechanical</option>
-                                    <option value="Civil">Civil</option>
-                                    <option value="Electrical">Electrical</option>
-                                    <option value="Electronics">Electronics</option>
+                                    {branches.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                             </div>

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2 } from 'lucide-react'
+import ManageBranchesModal from '@/app/components/ManageBranchesModal'
 
 // Types
 type Resource = {
@@ -26,10 +27,16 @@ type Profile = {
     role: string
 }
 
+type Branch = {
+    id: string
+    name: string
+}
+
 export default function Dashboard() {
     const router = useRouter()
     const [userProfile, setUserProfile] = useState<Profile | null>(null)
     const [resources, setResources] = useState<Resource[]>([])
+    const [branches, setBranches] = useState<Branch[]>([])
     const [loading, setLoading] = useState(true)
 
     // Filters
@@ -40,43 +47,47 @@ export default function Dashboard() {
 
     // Mobile specific
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isBranchModalOpen, setIsBranchModalOpen] = useState(false)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
 
     // Fetch Logic
     useEffect(() => {
-        const init = async () => {
-            // 1. Get User
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (user) {
-                // 2. Get Profile only if user exists
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single()
-
-                if (profile) {
-                    setUserProfile(profile)
-                    // Smart Filter Defaults (only if user logged in with defaults)
-                    if (selectedBranch === '') setSelectedBranch(profile.branch || '')
-                    if (selectedSemester === '') setSelectedSemester(profile.semester || '')
-                } else {
-                    // Fallback if no profile row exists yet
-                    setUserProfile({
-                        id: user.id,
-                        full_name: user.user_metadata?.full_name || 'User',
-                        branch: '',
-                        semester: 0,
-                        role: 'student' // Default to student
-                    })
-                }
-            }
-
-            fetchResources()
-        }
-
         init()
     }, [])
+
+    const init = async () => {
+        // 1. Get User & Profile
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single()
+
+            if (profile) {
+                setUserProfile(profile)
+                if (selectedBranch === '') setSelectedBranch(profile.branch || '')
+                if (selectedSemester === '') setSelectedSemester(profile.semester || '')
+            } else {
+                setUserProfile({
+                    id: user.id,
+                    full_name: user.user_metadata?.full_name || 'User',
+                    branch: '',
+                    semester: 0,
+                    role: 'student'
+                })
+            }
+        }
+
+        await Promise.all([fetchBranches(), fetchResources()])
+        setLoading(false)
+    }
+
+    const fetchBranches = async () => {
+        const { data } = await supabase.from('branches').select('*').order('name')
+        if (data) setBranches(data)
+    }
 
     // Refetch when filters change
     useEffect(() => {
@@ -84,40 +95,54 @@ export default function Dashboard() {
     }, [selectedBranch, selectedSemester, selectedType, searchQuery])
 
     const fetchResources = async () => {
-        setLoading(true)
         let query = supabase.from('resources').select('*')
 
         if (selectedBranch) query = query.eq('branch', selectedBranch)
         if (selectedSemester) query = query.eq('semester', selectedSemester)
         if (selectedType) query = query.eq('type', selectedType)
 
-        // For Search, we do client-side or simple ILIKE
         if (searchQuery) {
             query = query.or(`title.ilike.%${searchQuery}%,subject_code.ilike.%${searchQuery}%`)
         }
 
         const { data, error } = await query
         if (data) setResources(data)
-        setLoading(false)
+    }
+
+    const handleDeleteResource = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation() // Prevent card click
+        if (!confirm('Are you sure you want to delete this resource?')) return
+        setDeletingId(id)
+
+        // Ideally should check deleting permissions or rely on RLS failure
+        const { error } = await supabase.from('resources').delete().eq('id', id)
+        if (!error) {
+            setResources(prev => prev.filter(r => r.id !== id))
+        } else {
+            alert('Failed to delete: ' + error.message)
+        }
+        setDeletingId(null)
     }
 
     const handleDownload = (url: string) => {
         window.open(url, '_blank')
     }
 
-    // Helper for semesters
     const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
-    const branches = ['Computer Science', 'Mechanical', 'Civil', 'Electrical', 'Electronics']
     const types = ['Notes', 'Papers', 'Labs', 'Books']
 
     const getBranchColor = (branch: string) => {
-        switch (branch) {
-            case 'Computer Science': return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-            case 'Mechanical': return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-            case 'Civil': return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-            case 'Electrical': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-            default: return 'bg-gray-800 text-gray-300 border-gray-700'
-        }
+        // Just a simple hash to color or default for dynamic branches
+        const colors = [
+            'bg-purple-500/10 text-purple-400 border-purple-500/20',
+            'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            'bg-orange-500/10 text-orange-400 border-orange-500/20',
+            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+            'bg-teal-500/10 text-teal-400 border-teal-500/20',
+            'bg-pink-500/10 text-pink-400 border-pink-500/20'
+        ]
+        const index = branch.length % colors.length
+        return colors[index]
     }
 
     const getTypeIcon = (type: string) => {
@@ -131,6 +156,12 @@ export default function Dashboard() {
 
     return (
         <div className="flex h-screen bg-[#0B0E14] text-white overflow-hidden font-sans">
+            <ManageBranchesModal
+                isOpen={isBranchModalOpen}
+                onClose={() => setIsBranchModalOpen(false)}
+                onUpdate={fetchBranches}
+            />
+
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div
@@ -151,7 +182,6 @@ export default function Dashboard() {
                         </div>
                         <h1 className="text-lg font-bold tracking-tight">EngHub</h1>
                     </div>
-                    {/* Close button for mobile */}
                     <button
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="lg:hidden p-2 text-gray-400 hover:text-white"
@@ -163,24 +193,36 @@ export default function Dashboard() {
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8">
                     {/* Branch Filter */}
                     <div>
-                        <div className="flex items-center gap-2 mb-4 px-2">
-                            <Layers className="size-4 text-blue-500" />
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Branch</h3>
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <div className="flex items-center gap-2">
+                                <Layers className="size-4 text-blue-500" />
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Branch</h3>
+                            </div>
+                            {userProfile?.role === 'admin' && (
+                                <button
+                                    onClick={() => setIsBranchModalOpen(true)}
+                                    className="text-gray-500 hover:text-blue-400 p-1 rounded"
+                                    title="Manage Branches"
+                                >
+                                    <Settings size={14} />
+                                </button>
+                            )}
                         </div>
 
                         <div className="space-y-1">
                             {branches.map(branch => (
                                 <button
-                                    key={branch}
+                                    key={branch.id}
                                     onClick={() => {
-                                        setSelectedBranch(branch === selectedBranch ? '' : branch);
-                                        setIsMobileMenuOpen(false); // Close on mobile selection
+                                        setSelectedBranch(branch.name === selectedBranch ? '' : branch.name);
+                                        setIsMobileMenuOpen(false);
                                     }}
-                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedBranch === branch ? 'bg-blue-600/10 text-blue-400 border-blue-600/20' : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-gray-200'}`}
+                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedBranch === branch.name ? 'bg-blue-600/10 text-blue-400 border-blue-600/20' : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-gray-200'}`}
                                 >
-                                    {branch}
+                                    {branch.name}
                                 </button>
                             ))}
+                            {branches.length === 0 && <div className="text-xs text-gray-600 px-3">No branches found</div>}
                         </div>
                     </div>
 
@@ -231,10 +273,9 @@ export default function Dashboard() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative w-full">
-                {/* Header (Search & Profile) */}
+                {/* Header */}
                 <header className="h-16 lg:h-20 border-b border-gray-800 flex items-center justify-between px-4 lg:px-8 bg-[#0B0E14] z-10 shrink-0 gap-4">
                     <div className="flex items-center gap-4 flex-1">
-                        {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(true)}
                             className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
@@ -260,9 +301,15 @@ export default function Dashboard() {
                         {userProfile ? (
                             <>
                                 {userProfile.role === 'admin' && (
-                                    <Link href="/admin/dashboard" className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                        <span>Admin</span>
-                                    </Link>
+                                    <>
+                                        <Link href="/admin/upload" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20" title="Upload New Resource">
+                                            <Plus size={18} />
+                                            <span className="hidden sm:inline">Upload</span>
+                                        </Link>
+                                        <Link href="/admin/dashboard" className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                            <span>Admin</span>
+                                        </Link>
+                                    </>
                                 )}
                                 <Link href="/profile">
                                     <div className="flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-gray-800">
@@ -315,7 +362,7 @@ export default function Dashboard() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">No resources found</h3>
                                 <p className="text-gray-500 max-w-md">
-                                    We couldn't find any resources matching your current filters. Try adjusting your search keywords or removing some filters.
+                                    Try adjusting your search or filters.
                                 </p>
                                 <button
                                     onClick={() => {
@@ -356,13 +403,26 @@ export default function Dashboard() {
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
                                                 <span className="truncate max-w-[100px]">By {res.uploaded_by || 'Admin'}</span>
                                             </div>
-                                            <button
-                                                onClick={() => handleDownload(res.file_url)}
-                                                className="flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-gray-800 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-all"
-                                            >
-                                                <Download size={14} />
-                                                Download
-                                            </button>
+
+                                            <div className="flex items-center gap-2">
+                                                {userProfile?.role === 'admin' && (
+                                                    <button
+                                                        onClick={(e) => handleDeleteResource(res.id, e)}
+                                                        className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                                                        title="Delete (Admin)"
+                                                        disabled={deletingId === res.id}
+                                                    >
+                                                        {deletingId === res.id ? <Loader2 className="animate-spin size-3" /> : <Trash2 size={14} />}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleDownload(res.file_url)}
+                                                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-gray-800 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-all"
+                                                >
+                                                    <Download size={14} />
+                                                    Download
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

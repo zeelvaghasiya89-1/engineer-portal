@@ -10,6 +10,7 @@ export default function AdminUpload() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [file, setFile] = useState<File | null>(null)
+    const [branches, setBranches] = useState<{ id: string, name: string }[]>([])
 
     // Form State
     const [title, setTitle] = useState('')
@@ -20,15 +21,18 @@ export default function AdminUpload() {
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-    // Check auth on mount
+    // Check auth & fetch branches
     useEffect(() => {
-        const checkAuth = async () => {
+        const init = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) {
                 router.push('/login')
             }
+
+            const { data } = await supabase.from('branches').select('*').order('name')
+            if (data) setBranches(data)
         }
-        checkAuth()
+        init()
     }, [router])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +82,7 @@ export default function AdminUpload() {
                 subject_code: subjectCode,
                 type,
                 file_url: publicUrl,
-                uploaded_by: user.id // Explicitly set uploaded_by
+                uploaded_by: user.id
             })
 
             if (dbError) throw dbError
@@ -157,11 +161,9 @@ export default function AdminUpload() {
                                     <label className="text-gray-400 text-sm font-medium mb-1 block">Branch</label>
                                     <select required value={branch} onChange={e => setBranch(e.target.value)} className="w-full rounded-lg bg-gray-900 border border-gray-700 text-white h-12 px-4 focus:ring-1 focus:ring-primary focus:border-primary">
                                         <option value="">Select Branch</option>
-                                        <option value="Computer Science">Computer Science</option>
-                                        <option value="Mechanical">Mechanical</option>
-                                        <option value="Civil">Civil</option>
-                                        <option value="Electrical">Electrical</option>
-                                        <option value="Electronics">Electronics</option>
+                                        {branches.map(b => (
+                                            <option key={b.id} value={b.name}>{b.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>

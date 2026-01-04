@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -21,15 +19,18 @@ body {
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #111318;
+  background: #111318;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #282e39;
-    border-radius: 3px;
+  background: #282e39;
+  border-radius: 3px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #3b4354;
+  background: #3b4354;
 }

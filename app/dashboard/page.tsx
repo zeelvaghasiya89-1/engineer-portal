@@ -213,10 +213,8 @@ export default function Dashboard() {
                         {userProfile ? (
                             <>
                                 {userProfile.role === 'admin' && (
-                                    <Link href="/admin/dashboard">
-                                        <button className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                            <span>Admin View</span>
-                                        </button>
+                                    <Link href="/admin/dashboard" className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        <span>Admin View</span>
                                     </Link>
                                 )}
                                 <Link href="/profile">
@@ -232,11 +230,9 @@ export default function Dashboard() {
                                 </Link>
                             </>
                         ) : (
-                            <Link href="/login">
-                                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20">
-                                    <LogIn size={18} />
-                                    Sign In
-                                </button>
+                            <Link href="/login" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20">
+                                <LogIn size={18} />
+                                Sign In
                             </Link>
                         )}
                     </div>

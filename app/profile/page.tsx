@@ -16,6 +16,7 @@ export default function Profile() {
     const [fullName, setFullName] = useState('')
     const [branch, setBranch] = useState('')
     const [semester, setSemester] = useState<number | ''>('')
+    const [role, setRole] = useState('')
 
     // Feedback
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -39,6 +40,7 @@ export default function Profile() {
                 setFullName(profile.full_name || '')
                 setBranch(profile.branch || '')
                 setSemester(profile.semester || '')
+                setRole(profile.role || 'student')
             }
             setLoading(false)
         }
@@ -126,6 +128,18 @@ export default function Profile() {
                                     disabled
                                     className="w-full bg-slate-50 dark:bg-[#282e39]/50 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-500 cursor-not-allowed"
                                 />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="block text-sm font-bold text-slate-400 uppercase">Role (Read Only)</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={role}
+                                        disabled
+                                        className="w-full bg-slate-50 dark:bg-[#282e39]/50 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-500 cursor-not-allowed capitalize"
+                                    />
+                                    {/* Helper text or link could go here */}
+                                </div>
                             </div>
                             <div className="space-y-4">
                                 <label className="block text-sm font-bold text-slate-400 uppercase">Branch</label>

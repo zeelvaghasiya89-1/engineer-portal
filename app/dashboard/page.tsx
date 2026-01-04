@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X } from 'lucide-react'
 
 // Types
 type Resource = {
@@ -37,6 +37,9 @@ export default function Dashboard() {
     const [selectedSemester, setSelectedSemester] = useState<number | ''>('')
     const [selectedType, setSelectedType] = useState<string>('')
     const [searchQuery, setSearchQuery] = useState('')
+
+    // Mobile specific
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     // Fetch Logic
     useEffect(() => {
@@ -119,18 +122,36 @@ export default function Dashboard() {
 
     return (
         <div className="flex h-screen bg-[#0B0E14] text-white overflow-hidden font-sans">
+            {/* Mobile Sidebar Overlay */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-72 flex-shrink-0 border-r border-gray-800 bg-[#11161D] flex flex-col overflow-y-auto custom-scrollbar pb-6">
-                <div className="p-6 border-b border-gray-800">
+            <aside className={`
+                fixed lg:static inset-y-0 left-0 w-72 bg-[#11161D] border-r border-gray-800 flex flex-col z-50 transition-transform duration-300 ease-in-out
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+                <div className="p-6 border-b border-gray-800 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-blue-600 size-8 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
                             <GraduationCap className="text-white size-5" />
                         </div>
                         <h1 className="text-lg font-bold tracking-tight">EngHub</h1>
                     </div>
+                    {/* Close button for mobile */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="lg:hidden p-2 text-gray-400 hover:text-white"
+                    >
+                        <X size={20} />
+                    </button>
                 </div>
 
-                <div className="p-4 space-y-8">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8">
                     {/* Branch Filter */}
                     <div>
                         <div className="flex items-center gap-2 mb-4 px-2">
@@ -142,7 +163,10 @@ export default function Dashboard() {
                             {branches.map(branch => (
                                 <button
                                     key={branch}
-                                    onClick={() => setSelectedBranch(branch === selectedBranch ? '' : branch)}
+                                    onClick={() => {
+                                        setSelectedBranch(branch === selectedBranch ? '' : branch);
+                                        setIsMobileMenuOpen(false); // Close on mobile selection
+                                    }}
                                     className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedBranch === branch ? 'bg-blue-600/10 text-blue-400 border-blue-600/20' : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-gray-200'}`}
                                 >
                                     {branch}
@@ -161,7 +185,10 @@ export default function Dashboard() {
                             <div className="relative">
                                 <select
                                     value={selectedSemester}
-                                    onChange={(e) => setSelectedSemester(e.target.value ? Number(e.target.value) : '')}
+                                    onChange={(e) => {
+                                        setSelectedSemester(e.target.value ? Number(e.target.value) : '');
+                                        setIsMobileMenuOpen(false);
+                                    }}
                                     className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2.5 px-4 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="">All Semesters</option>
@@ -194,56 +221,67 @@ export default function Dashboard() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden relative">
+            <main className="flex-1 flex flex-col overflow-hidden relative w-full">
                 {/* Header (Search & Profile) */}
-                <header className="h-20 border-b border-gray-800 flex items-center justify-between px-8 bg-[#0B0E14] z-10 shrink-0">
-                    <div className="flex-1 max-w-2xl mr-8">
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search, e.g. 'Thermodynamics' or 'ME101'"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="block w-full rounded-xl bg-[#11161D] border border-gray-800 text-gray-200 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 sm:text-sm pl-12 py-3 transition-all outline-none"
-                            />
+                <header className="h-16 lg:h-20 border-b border-gray-800 flex items-center justify-between px-4 lg:px-8 bg-[#0B0E14] z-10 shrink-0 gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
+                        >
+                            <Menu size={24} />
+                        </button>
+
+                        <div className="flex-1 max-w-2xl">
+                            <div className="relative group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 lg:w-5 lg:h-5 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="block w-full rounded-xl bg-[#11161D] border border-gray-800 text-gray-200 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm pl-10 lg:pl-12 py-2.5 lg:py-3 transition-all outline-none"
+                                />
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+
+                    <div className="flex items-center gap-2 lg:gap-4 shrink-0">
                         {userProfile ? (
                             <>
                                 {userProfile.role === 'admin' && (
                                     <Link href="/admin/dashboard" className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                        <span>Admin View</span>
+                                        <span>Admin</span>
                                     </Link>
                                 )}
                                 <Link href="/profile">
-                                    <div className="flex items-center gap-3 pl-4 border-l border-gray-800">
+                                    <div className="flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-gray-800">
                                         <div className="text-right hidden sm:block">
                                             <p className="text-sm font-medium text-white">{userProfile.full_name}</p>
                                             <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
                                         </div>
-                                        <div className="size-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white ring-2 ring-gray-800 hover:ring-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-500/20">
-                                            <User size={20} />
+                                        <div className="size-8 lg:size-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white ring-2 ring-gray-800 hover:ring-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-500/20">
+                                            <User size={18} />
                                         </div>
                                     </div>
                                 </Link>
                             </>
                         ) : (
-                            <Link href="/login" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20">
+                            <Link href="/login" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20">
                                 <LogIn size={18} />
-                                Sign In
+                                <span className="hidden sm:inline">Sign In</span>
                             </Link>
                         )}
                     </div>
                 </header>
 
                 {/* Resource Feed */}
-                <div className="flex-1 overflow-y-auto p-8 bg-[#0B0E14]">
+                <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0B0E14]">
                     <div className="max-w-[1600px] mx-auto">
-                        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 lg:mb-8 gap-4">
                             <div>
-                                <h2 className="text-3xl font-bold text-white mb-2">
+                                <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
                                     {selectedBranch ? `${selectedBranch}` : 'All Resources'}
                                 </h2>
                                 <p className="text-gray-400 text-sm">
@@ -251,7 +289,7 @@ export default function Dashboard() {
                                     Browse and download academic materials.
                                 </p>
                             </div>
-                            <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700">
+                            <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700 w-fit">
                                 {resources.length} Result{resources.length !== 1 ? 's' : ''}
                             </span>
                         </div>
@@ -283,12 +321,12 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
                                 {resources.map(res => (
                                     <div key={res.id} className="group flex flex-col bg-[#11161D] border border-gray-800 rounded-xl overflow-hidden hover:border-gray-600 hover:shadow-xl hover:shadow-black/40 transition-all duration-300 relative">
                                         <div className="p-5 flex-1">
                                             <div className="flex justify-between items-start mb-4">
-                                                <div className={`p-3 rounded-xl flex items-center justify-center ${res.type === 'Notes' ? 'bg-blue-500/10 text-blue-400' : res.type === 'Video' ? 'bg-purple-500/10 text-purple-400' : 'bg-gray-800 text-gray-400'}`}>
+                                                <div className={`p-3 rounded-xl flex items-center justify-center ${res.type === 'Notes' ? 'bg-blue-500/10 text-blue-500' : res.type === 'Video' ? 'bg-purple-500/10 text-purple-500' : 'bg-gray-800 text-gray-400'}`}>
                                                     {getTypeIcon(res.type)}
                                                 </div>
                                                 <span className={`text-[10px] px-2 py-1 rounded font-mono border ${getBranchColor(res.branch)}`}>

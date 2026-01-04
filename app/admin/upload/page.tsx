@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
 
 export default function AdminUpload() {
     const [loading, setLoading] = useState(false)
@@ -105,14 +106,17 @@ export default function AdminUpload() {
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-            <header className="w-full px-8 py-8 pb-4 shrink-0 z-10 bg-background-dark/95 backdrop-blur-sm sticky top-0 border-b border-border-dark">
+            <header className="w-full px-4 md:px-8 py-6 md:py-8 pb-4 shrink-0 z-10 bg-background-dark/95 backdrop-blur-sm sticky top-0 border-b border-border-dark">
                 <div className="max-w-5xl mx-auto w-full">
-                    <h2 className="text-white text-3xl font-black leading-tight tracking-tight">Upload New Resource</h2>
-                    <p className="text-gray-400 text-base">Add new study materials to the student database.</p>
+                    <Link href="/admin/dashboard" className="inline-block text-sm text-gray-400 hover:text-primary mb-2 transition-colors">
+                        &larr; Back to Dashboard
+                    </Link>
+                    <h2 className="text-white text-2xl md:text-3xl font-black leading-tight tracking-tight">Upload New Resource</h2>
+                    <p className="text-gray-400 text-sm md:text-base">Add new study materials to the student database.</p>
                 </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-8 pb-20 pt-6">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-20 pt-6">
                 <div className="max-w-5xl mx-auto w-full">
                     {message && (
                         <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>

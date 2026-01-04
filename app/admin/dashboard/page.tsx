@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, FileText, Upload, Users } from 'lucide-react'
+import { Eye, FileText, Upload, Users, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminDashboard() {
@@ -46,36 +46,44 @@ export default function AdminDashboard() {
     }, [])
 
     return (
-        <div className="p-8 h-full overflow-y-auto bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
-            <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-slate-500 mb-8 max-w-2xl">Overview of the Engineering Resource Portal activity.</p>
+        <div className="p-4 md:p-8 h-full min-h-screen overflow-y-auto bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <div>
+                    <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary mb-2 transition-colors">
+                        <ArrowLeft size={16} />
+                        Back to Portal
+                    </Link>
+                    <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
+                    <p className="text-slate-500 text-sm md:text-base max-w-2xl">Overview of the Engineering Resource Portal activity.</p>
+                </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-6 rounded-xl shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10">
+                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-5 md:p-6 rounded-xl shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500">
                             <FileText size={24} />
                         </div>
                         <span className="text-xs font-semibold bg-green-500/10 text-green-500 px-2 py-1 rounded">Live</span>
                     </div>
-                    <h3 className="text-4xl font-bold mb-1">{stats.totalResources}</h3>
+                    <h3 className="text-3xl md:text-4xl font-bold mb-1">{stats.totalResources}</h3>
                     <p className="text-slate-500 text-sm">Total Resources</p>
                 </div>
 
-                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-6 rounded-xl shadow-sm">
+                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-5 md:p-6 rounded-xl shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-500">
                             <Users size={24} />
                         </div>
                         <span className="text-xs font-semibold bg-green-500/10 text-green-500 px-2 py-1 rounded">Active</span>
                     </div>
-                    <h3 className="text-4xl font-bold mb-1">{stats.totalUsers}</h3>
+                    <h3 className="text-3xl md:text-4xl font-bold mb-1">{stats.totalUsers}</h3>
                     <p className="text-slate-500 text-sm">Registered Students</p>
                 </div>
 
-                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-6 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
-                    <Link href="/admin/upload">
-                        <button className="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 mb-2">
+                <div className="bg-white dark:bg-[#1C2333] border border-slate-200 dark:border-[#282e39] p-5 md:p-6 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
+                    <Link href="/admin/upload" className="w-full">
+                        <button className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 mb-2">
                             <Upload size={20} />
                             Upload New Resource
                         </button>
@@ -90,7 +98,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/manage" className="text-sm text-primary hover:underline">View All</Link>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
                         <thead>
                             <tr className="bg-slate-50 dark:bg-[#111318]/50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200 dark:border-[#282e39]">
                                 <th className="px-6 py-4">Title</th>
@@ -115,9 +123,9 @@ export default function AdminDashboard() {
                                                 {file.type}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 text-sm">{new Date(file.created_at).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 text-slate-500 text-sm whitespace-nowrap">{new Date(file.created_at).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 text-right">
-                                            <a href={file.file_url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary transition-colors">
+                                            <a href={file.file_url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary transition-colors inline-block">
                                                 <Eye size={18} />
                                             </a>
                                         </td>

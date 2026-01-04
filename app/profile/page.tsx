@@ -89,7 +89,7 @@ export default function Profile() {
                 </div>
             </nav>
 
-            <main className="max-w-4xl mx-auto p-6 mt-8">
+            <main className="max-w-4xl mx-auto p-4 md:p-6 mt-4 md:mt-8">
                 <div className="bg-white dark:bg-[#1C2333] rounded-xl border border-slate-200 dark:border-[#282e39] overflow-hidden shadow-lg">
                     <div className="relative h-32 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
                     <div className="px-8 pb-8">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Loader2, FileText, Video, File, Search, ChevronDown, Trash2, Edit2, Plus, ArrowLeft } from 'lucide-react'
+import { Loader2, FileText, Video, File, Search, ChevronDown, Trash2, Edit2, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 // Types
@@ -169,31 +169,21 @@ export default function AdminManage() {
     }
 
     if (loading) return (
-        <div className="flex-1 flex justify-center items-center h-full bg-[#0B0E14] text-white">
+        <div className="flex-1 flex justify-center items-center h-full">
             <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
         </div>
     )
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#0B0E14] h-full p-4 md:p-8 text-white font-sans">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
             <div className="max-w-[1400px] mx-auto">
 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 md:mb-8 gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                     <div>
-                        <Link href="/admin/dashboard" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-400 mb-2 transition-colors">
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Dashboard
-                        </Link>
-                        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">Manage Resources</h1>
-                        <p className="text-gray-400 text-sm">View, edit, and organize all uploaded academic materials.</p>
+                        <h1 className="text-3xl font-bold mb-2">All Resources</h1>
+                        <p className="text-gray-400">View, edit, and organize all uploaded academic materials.</p>
                     </div>
-                    <Link href="/admin/upload">
-                        <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                            <Plus size={18} />
-                            Upload New Resource
-                        </button>
-                    </Link>
                 </div>
 
                 {message && (

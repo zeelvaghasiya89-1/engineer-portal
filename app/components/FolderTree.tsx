@@ -119,12 +119,12 @@ export default function FolderTree({ folders, selectedFolder, onSelectFolder, on
         const isSelected = selectedFolder === folder.id
 
         return (
-            <div key={folder.id} className="relative">
+            <div key={folder.id}>
                 <div
                     onClick={() => onSelectFolder(folder.id)}
                     onContextMenu={(e) => handleRightClick(e, folder.id)}
                     className={`
-                        group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all
+                        group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all
                         ${isSelected
                             ? 'bg-[#135bec]/20 text-white'
                             : 'text-[#9da6b9] hover:bg-[#282e39] hover:text-white'
@@ -180,55 +180,49 @@ export default function FolderTree({ folders, selectedFolder, onSelectFolder, on
                         <Loader2 className="w-4 h-4 animate-spin text-red-400" />
                     )}
 
-                    {/* Action buttons - always visible when selected (admin only) */}
+                    {/* Action buttons - always visible when selected or hovered (admin only) */}
                     {isAdmin && !editingFolder && deleting !== folder.id && (
-                        <div className={`flex items-center gap-0.5 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
-                            <MoreVertical className="w-4 h-4" />
+                        <div className={`
+                        absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-[#1a1d24] shadow-xl rounded-md border border-[#282e39] overflow-hidden
+                        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
+                        transition-all duration-200 z-50
+                    `}>
+                            {/* Add Subfolder */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onCreateFolder(folder.id)
+                                }}
+                                className="flex items-center justify-center p-1.5 hover:bg-[#282e39] text-[#9da6b9] hover:text-white transition-colors border-r border-[#282e39]"
+                                title="Add Subfolder"
+                            >
+                                <FolderPlus className="w-3.5 h-3.5" />
+                            </button>
+                            {/* Rename */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    startRename(folder)
+                                }}
+                                className="flex items-center justify-center p-1.5 hover:bg-[#282e39] text-[#9da6b9] hover:text-white transition-colors border-r border-[#282e39]"
+                                title="Rename"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            {/* Delete */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDelete(folder.id)
+                                }}
+                                className="flex items-center justify-center p-1.5 hover:bg-red-500/20 text-[#9da6b9] hover:text-red-400 transition-colors"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                         </div>
                     )}
                 </div>
-
-                {/* Floating Action Menu - shows when folder is selected */}
-                {isAdmin && isSelected && !editingFolder && deleting !== folder.id && (
-                    <div
-                        className="fixed flex flex-col bg-[#1a1d24] border border-[#282e39] rounded-lg shadow-2xl overflow-hidden"
-                        style={{ zIndex: 9999, left: '270px' }}
-                    >
-                        {/* Add Subfolder */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onCreateFolder(folder.id)
-                            }}
-                            className="flex items-center justify-center p-2.5 hover:bg-[#282e39] text-[#9da6b9] hover:text-white transition-colors border-b border-[#282e39]"
-                            title="Add Subfolder"
-                        >
-                            <FolderPlus className="w-4 h-4" />
-                        </button>
-                        {/* Rename */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                startRename(folder)
-                            }}
-                            className="flex items-center justify-center p-2.5 hover:bg-[#282e39] text-[#9da6b9] hover:text-white transition-colors border-b border-[#282e39]"
-                            title="Rename"
-                        >
-                            <Edit2 className="w-4 h-4" />
-                        </button>
-                        {/* Delete */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                handleDelete(folder.id)
-                            }}
-                            className="flex items-center justify-center p-2.5 hover:bg-red-500/20 text-[#9da6b9] hover:text-red-400 transition-colors"
-                            title="Delete"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
 
                 {/* Children */}
                 {hasChildren && isExpanded && (

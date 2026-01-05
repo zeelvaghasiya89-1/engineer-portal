@@ -558,30 +558,45 @@ export default function Dashboard() {
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
                                     {sortedResources.map(res => (
-                                        <div key={res.id} className="group flex flex-col gap-4 rounded-xl border border-[#282e39] bg-[#1a1d24] p-4 hover:border-[#135bec]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#135bec]/5 hover:-translate-y-1 cursor-pointer">
+                                        <div
+                                            key={res.id}
+                                            className="group flex flex-col gap-4 rounded-xl border border-[#282e39] bg-[#1a1d24] p-4 hover:border-[#135bec]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#135bec]/5 hover:-translate-y-1 cursor-pointer"
+                                            onClick={() => handleDownload(res.file_url)}
+                                        >
                                             <div className="flex items-start justify-between">
                                                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${getTypeColor(res.type)}`}>
                                                     {getTypeIcon(res.type)}
                                                 </div>
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-white" title="Preview">
-                                                        <Eye className="w-4 h-4" />
+                                                {/* Action buttons - always visible on mobile, hover on desktop */}
+                                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        className="p-2 sm:p-1.5 rounded-md bg-[#282e39] sm:bg-transparent hover:bg-white/10 text-[#9da6b9] hover:text-white"
+                                                        title="Preview"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleDownload(res.file_url)
+                                                        }}
+                                                    >
+                                                        <Eye className="w-5 h-5 sm:w-4 sm:h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDownload(res.file_url)}
-                                                        className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-[#135bec]"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleDownload(res.file_url)
+                                                        }}
+                                                        className="p-2 sm:p-1.5 rounded-md bg-[#135bec] sm:bg-transparent hover:bg-white/10 text-white sm:text-[#9da6b9] sm:hover:text-[#135bec]"
                                                         title="Download"
                                                     >
-                                                        <Download className="w-4 h-4" />
+                                                        <Download className="w-5 h-5 sm:w-4 sm:h-4" />
                                                     </button>
                                                     {userProfile?.role === 'admin' && (
                                                         <button
                                                             onClick={(e) => handleDeleteResource(res.id, e)}
-                                                            className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-red-400"
+                                                            className="p-2 sm:p-1.5 rounded-md bg-[#282e39] sm:bg-transparent hover:bg-white/10 text-[#9da6b9] hover:text-red-400"
                                                             title="Delete"
                                                             disabled={deletingId === res.id}
                                                         >
-                                                            {deletingId === res.id ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                                                            {deletingId === res.id ? <Loader2 className="animate-spin w-5 h-5 sm:w-4 sm:h-4" /> : <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />}
                                                         </button>
                                                     )}
                                                 </div>
@@ -594,11 +609,16 @@ export default function Dashboard() {
                                                 </p>
                                             </div>
                                             <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 flex-wrap">
                                                     <span className={`inline-flex items-center rounded px-2 py-0.5 font-mono text-[10px] font-medium border ${getBadgeColor(res.branch)}`}>{res.branch}</span>
                                                     <span className="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">Sem {res.semester}</span>
                                                 </div>
                                                 <span className="font-mono text-[10px] text-[#9da6b9]">{res.type}</span>
+                                            </div>
+                                            {/* Mobile tap indicator */}
+                                            <div className="sm:hidden text-center text-xs text-[#135bec] font-medium flex items-center justify-center gap-1 pt-2 border-t border-[#282e39]">
+                                                <span className="material-symbols-outlined text-[16px]">touch_app</span>
+                                                Tap to open
                                             </div>
                                         </div>
                                     ))}

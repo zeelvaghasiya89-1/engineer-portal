@@ -181,7 +181,8 @@ export default function Dashboard() {
             // Debug: Check columns
             const { data: debugData } = await supabase.from('resources').select('*').limit(1)
             const keys = debugData && debugData[0] ? Object.keys(debugData[0]).join(', ') : 'no data'
-            alert(`Failed to delete: ${error.message}\nAvailable columns: ${keys}`)
+            // Show error in UI
+            alert(`ERROR: ${error.message}\n\nYOUR COLUMNS: ${keys}\n\nPlease send this to me!`)
         }
         setDeletingId(null)
     }

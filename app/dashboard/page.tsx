@@ -177,7 +177,11 @@ export default function Dashboard() {
         if (!error) {
             setResources(prev => prev.filter(r => r.id !== id))
         } else {
-            alert('Failed to delete: ' + error.message)
+            console.error('Delete error:', error)
+            // Debug: Check columns
+            const { data: debugData } = await supabase.from('resources').select('*').limit(1)
+            const keys = debugData && debugData[0] ? Object.keys(debugData[0]).join(', ') : 'no data'
+            alert(`Failed to delete: ${error.message}\nAvailable columns: ${keys}`)
         }
         setDeletingId(null)
     }

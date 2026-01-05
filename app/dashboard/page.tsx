@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye, Check, ArrowUpDown } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye, Check, ArrowUpDown, FolderPlus } from 'lucide-react'
 import ManageBranchesModal from '@/app/components/ManageBranchesModal'
+import FolderTree, { FolderType } from '@/app/components/FolderTree'
+import CreateFolderModal from '@/app/components/CreateFolderModal'
 
 // Types
 type Resource = {
@@ -18,6 +20,7 @@ type Resource = {
     file_url: string
     uploaded_by: string
     created_at?: string
+    folder_id?: string | null
 }
 
 type Profile = {
@@ -58,6 +61,12 @@ export default function Dashboard() {
         { id: 3, text: 'Lab manual updated for Electronics', time: '1 day ago', unread: false },
     ])
 
+    // Folders
+    const [folders, setFolders] = useState<FolderType[]>([])
+    const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
+    const [showCreateFolder, setShowCreateFolder] = useState(false)
+    const [parentFolderForCreate, setParentFolderForCreate] = useState<FolderType | null>(null)
+
     // Mobile specific
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isBranchModalOpen, setIsBranchModalOpen] = useState(false)
@@ -91,8 +100,13 @@ export default function Dashboard() {
             }
         }
 
-        await Promise.all([fetchBranches(), fetchResources()])
+        await Promise.all([fetchBranches(), fetchResources(), fetchFolders()])
         setLoading(false)
+    }
+
+    const fetchFolders = async () => {
+        const { data } = await supabase.from('folders').select('*').order('name')
+        if (data) setFolders(data)
     }
 
     const fetchBranches = async () => {
@@ -103,11 +117,14 @@ export default function Dashboard() {
     // Refetch when filters change
     useEffect(() => {
         fetchResources()
-    }, [selectedBranches, selectedSemester, selectedType, searchQuery])
+    }, [selectedBranches, selectedSemester, selectedType, searchQuery, selectedFolder])
 
     const fetchResources = async () => {
         let query = supabase.from('resources').select('*')
 
+        if (selectedFolder) {
+            query = query.eq('folder_id', selectedFolder)
+        }
         if (selectedBranches.length > 0) {
             query = query.in('branch', selectedBranches)
         }
@@ -268,6 +285,16 @@ export default function Dashboard() {
                 onClose={() => setIsBranchModalOpen(false)}
                 onUpdate={fetchBranches}
             />
+            <CreateFolderModal
+                isOpen={showCreateFolder}
+                onClose={() => {
+                    setShowCreateFolder(false)
+                    setParentFolderForCreate(null)
+                }}
+                onFolderCreated={fetchFolders}
+                parentFolder={parentFolderForCreate}
+                existingFolders={folders}
+            />
 
             {/* Header */}
             <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#282e39] bg-[#111318] px-4 lg:px-6 z-20 relative">
@@ -386,8 +413,26 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    {/* Filters: Branch - Now with animated buttons */}
+                    {/* Folders Section */}
                     <div className="px-5 pt-6">
+                        <FolderTree
+                            folders={folders}
+                            selectedFolder={selectedFolder}
+                            onSelectFolder={setSelectedFolder}
+                            onCreateFolder={(parentId) => {
+                                const parent = folders.find(f => f.id === parentId) || null
+                                setParentFolderForCreate(parent)
+                                setShowCreateFolder(true)
+                            }}
+                            onFoldersChange={fetchFolders}
+                            isAdmin={userProfile?.role === 'admin'}
+                        />
+                    </div>
+
+                    <div className="h-px bg-[#282e39] mx-5 my-4"></div>
+
+                    {/* Filters: Branch - Now with animated buttons */}
+                    <div className="px-5">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-bold text-[#9da6b9] uppercase tracking-wider">Branch</h3>
                             <button onClick={clearFilters} className="text-[10px] text-[#135bec] hover:underline">Clear</button>

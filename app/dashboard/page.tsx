@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye } from 'lucide-react'
 import ManageBranchesModal from '@/app/components/ManageBranchesModal'
 
 // Types
@@ -40,7 +40,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true)
 
     // Filters
-    const [selectedBranch, setSelectedBranch] = useState<string>('')
+    const [selectedBranches, setSelectedBranches] = useState<string[]>([])
     const [selectedSemester, setSelectedSemester] = useState<number | ''>('')
     const [selectedType, setSelectedType] = useState<string>('')
     const [searchQuery, setSearchQuery] = useState('')
@@ -67,8 +67,6 @@ export default function Dashboard() {
 
             if (profile) {
                 setUserProfile(profile)
-                if (selectedBranch === '') setSelectedBranch(profile.branch || '')
-                if (selectedSemester === '') setSelectedSemester(profile.semester || '')
             } else {
                 setUserProfile({
                     id: user.id,
@@ -92,12 +90,14 @@ export default function Dashboard() {
     // Refetch when filters change
     useEffect(() => {
         fetchResources()
-    }, [selectedBranch, selectedSemester, selectedType, searchQuery])
+    }, [selectedBranches, selectedSemester, selectedType, searchQuery])
 
     const fetchResources = async () => {
         let query = supabase.from('resources').select('*')
 
-        if (selectedBranch) query = query.eq('branch', selectedBranch)
+        if (selectedBranches.length > 0) {
+            query = query.in('branch', selectedBranches)
+        }
         if (selectedSemester) query = query.eq('semester', selectedSemester)
         if (selectedType) query = query.eq('type', selectedType)
 
@@ -109,12 +109,19 @@ export default function Dashboard() {
         if (data) setResources(data)
     }
 
+    const handleBranchToggle = (branchName: string) => {
+        setSelectedBranches(prev =>
+            prev.includes(branchName)
+                ? prev.filter(b => b !== branchName)
+                : [...prev, branchName]
+        )
+    }
+
     const handleDeleteResource = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation() // Prevent card click
+        e.stopPropagation()
         if (!confirm('Are you sure you want to delete this resource?')) return
         setDeletingId(id)
 
-        // Ideally should check deleting permissions or rely on RLS failure
         const { error } = await supabase.from('resources').delete().eq('id', id)
         if (!error) {
             setResources(prev => prev.filter(r => r.id !== id))
@@ -128,260 +135,269 @@ export default function Dashboard() {
         window.open(url, '_blank')
     }
 
+    const clearFilters = () => {
+        setSelectedBranches([])
+        setSelectedSemester('')
+        setSelectedType('')
+        setSearchQuery('')
+    }
+
     const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
     const types = ['Notes', 'Papers', 'Labs', 'Books']
 
+    const getTypeIcon = (type: string) => {
+        switch (type) {
+            case 'Video': return <Video className="w-5 h-5" />
+            case 'Notes': return <span className="material-symbols-outlined text-[20px]">menu_book</span>
+            case 'Books': return <BookOpen className="w-5 h-5" />
+            case 'Labs': return <span className="material-symbols-outlined text-[20px]">science</span>
+            case 'Papers': return <span className="material-symbols-outlined text-[20px]">article</span>
+            default: return <File className="w-5 h-5" />
+        }
+    }
+
+    const getTypeColor = (type: string) => {
+        switch (type) {
+            case 'Notes': return 'text-blue-400 bg-blue-500/10 group-hover:bg-blue-500 group-hover:text-white'
+            case 'Papers': return 'text-emerald-400 bg-emerald-500/10 group-hover:bg-emerald-500 group-hover:text-white'
+            case 'Labs': return 'text-orange-400 bg-orange-500/10 group-hover:bg-orange-500 group-hover:text-white'
+            case 'Books': return 'text-pink-400 bg-pink-500/10 group-hover:bg-pink-500 group-hover:text-white'
+            default: return 'text-gray-400 bg-gray-500/10'
+        }
+    }
+
     const getBranchColor = (branch: string) => {
-        // Just a simple hash to color or default for dynamic branches
         const colors = [
-            'bg-purple-500/10 text-purple-400 border-purple-500/20',
             'bg-blue-500/10 text-blue-400 border-blue-500/20',
             'bg-orange-500/10 text-orange-400 border-orange-500/20',
-            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-            'bg-teal-500/10 text-teal-400 border-teal-500/20',
-            'bg-pink-500/10 text-pink-400 border-pink-500/20'
+            'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+            'bg-pink-500/10 text-pink-400 border-pink-500/20',
+            'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+            'bg-purple-500/10 text-purple-400 border-purple-500/20',
         ]
         const index = branch.length % colors.length
         return colors[index]
     }
 
-    const getTypeIcon = (type: string) => {
-        switch (type) {
-            case 'Video': return <Video className="w-5 h-5 text-purple-400" />
-            case 'Notes': return <FileText className="w-5 h-5 text-blue-400" />
-            case 'Books': return <BookOpen className="w-5 h-5 text-green-400" />
-            default: return <File className="w-5 h-5 text-gray-400" />
-        }
-    }
-
     return (
-        <div className="flex h-screen bg-[#0B0E14] text-white overflow-hidden font-sans">
+        <div className="bg-[#111318] text-white overflow-hidden h-screen flex flex-col font-sans">
             <ManageBranchesModal
                 isOpen={isBranchModalOpen}
                 onClose={() => setIsBranchModalOpen(false)}
                 onUpdate={fetchBranches}
             />
 
-            {/* Mobile Sidebar Overlay */}
-            {isMobileMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
-            <aside className={`
-                fixed lg:static inset-y-0 left-0 w-72 bg-[#11161D] border-r border-gray-800 flex flex-col z-50 transition-transform duration-300 ease-in-out
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
-                <div className="p-6 border-b border-gray-800 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-600 size-8 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
-                            <GraduationCap className="text-white size-5" />
-                        </div>
-                        <h1 className="text-lg font-bold tracking-tight">EngHub</h1>
-                    </div>
+            {/* Header */}
+            <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#282e39] bg-[#111318] px-4 lg:px-6 z-20 relative">
+                {/* Logo */}
+                <div className="flex items-center gap-3 w-auto lg:w-64">
                     <button
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="lg:hidden p-2 text-gray-400 hover:text-white"
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
                     >
-                        <X size={20} />
+                        <Menu size={24} />
                     </button>
+                    <div className="flex size-8 items-center justify-center rounded bg-[#135bec] text-white">
+                        <span className="material-symbols-outlined text-[20px]">hub</span>
+                    </div>
+                    <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">EngineerHub</h2>
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8">
-                    {/* Navigation Links */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-4 px-2">
-                            <Menu className="size-4 text-gray-400" />
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Menu</h3>
+                {/* Central Search */}
+                <div className="flex flex-1 max-w-2xl px-2 lg:px-4">
+                    <div className="flex w-full items-center rounded-lg bg-[#282e39] h-10 group focus-within:ring-2 focus-within:ring-[#135bec]/50 transition-all">
+                        <div className="flex items-center justify-center pl-3 text-[#9da6b9]">
+                            <Search className="w-5 h-5" />
                         </div>
-                        <div className="space-y-1">
-                            <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-                                <span className="material-symbols-outlined text-[18px]">home</span>
-                                Home
-                            </Link>
-                            <button
-                                onClick={() => {
-                                    setSelectedBranch('')
-                                    setSelectedSemester('')
-                                    setSelectedType('')
-                                    setSearchQuery('')
-                                }}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-blue-600/10 text-blue-400 border border-blue-600/20 transition-colors"
-                            >
-                                <FileText size={18} />
-                                Documents
-                            </button>
-                            {userProfile?.role === 'admin' && (
-                                <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-                                    <LayoutDashboard size={18} />
-                                    Admin Dashboard
-                                </Link>
-                            )}
-                        </div>
+                        <input
+                            className="flex-1 bg-transparent border-none text-white placeholder-[#9da6b9] text-sm px-3 focus:ring-0 focus:outline-none h-full w-full"
+                            placeholder="Search notes, manuals, exams..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <div className="pr-2 hidden sm:flex text-xs text-[#9da6b9] font-mono bg-[#1a1d24]/50 rounded px-1.5 py-0.5 border border-white/5 mr-2">⌘K</div>
+                    </div>
+                </div>
+
+                {/* Right Actions */}
+                <div className="flex items-center gap-2 lg:gap-4 w-auto lg:w-64 justify-end">
+                    {userProfile?.role === 'admin' && (
+                        <Link href="/admin/upload" className="hidden lg:flex items-center justify-center gap-2 rounded-lg bg-[#135bec] hover:bg-[#1d66f0] transition-colors h-9 px-4 text-white text-sm font-semibold shadow-lg shadow-[#135bec]/20">
+                            <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                            <span className="truncate">Upload</span>
+                        </Link>
+                    )}
+                    <div className="h-8 w-[1px] bg-[#282e39] mx-1 hidden lg:block"></div>
+                    <button className="text-[#9da6b9] hover:text-white transition-colors relative p-2">
+                        <Bell className="w-5 h-5" />
+                        <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full border-2 border-[#111318]"></span>
+                    </button>
+                    {userProfile ? (
+                        <Link href="/profile">
+                            <div className="size-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full ring-2 ring-[#282e39] cursor-pointer flex items-center justify-center text-white">
+                                <User size={18} />
+                            </div>
+                        </Link>
+                    ) : (
+                        <Link href="/login" className="flex items-center gap-2 bg-[#135bec] hover:bg-[#1d66f0] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                            <LogIn size={18} />
+                            <span className="hidden sm:inline">Sign In</span>
+                        </Link>
+                    )}
+                </div>
+            </header>
+
+            {/* Main Layout */}
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile Sidebar Overlay */}
+                {isMobileMenuOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                )}
+
+                {/* Sidebar */}
+                <aside className={`
+                    fixed lg:static inset-y-0 left-0 w-64 flex-shrink-0 border-r border-[#282e39] bg-[#111318] flex flex-col overflow-y-auto custom-scrollbar pb-6 z-50 transition-transform duration-300 ease-in-out
+                    ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                `}>
+                    {/* Mobile Close Button */}
+                    <div className="lg:hidden p-4 border-b border-[#282e39] flex items-center justify-between">
+                        <span className="font-bold text-white">Filters</span>
+                        <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
+                            <X size={20} />
+                        </button>
                     </div>
 
-                    {/* Branch Filter */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4 px-2">
-                            <div className="flex items-center gap-2">
-                                <Layers className="size-4 text-blue-500" />
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Branch</h3>
-                            </div>
-                            {userProfile?.role === 'admin' && (
-                                <button
-                                    onClick={() => setIsBranchModalOpen(true)}
-                                    className="text-gray-500 hover:text-blue-400 p-1 rounded"
-                                    title="Manage Branches"
-                                >
-                                    <Settings size={14} />
-                                </button>
-                            )}
+                    {/* Filters: Branch */}
+                    <div className="px-5 pt-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xs font-bold text-[#9da6b9] uppercase tracking-wider">Branch</h3>
+                            <button onClick={clearFilters} className="text-[10px] text-[#135bec] hover:underline">Clear</button>
                         </div>
-
-                        <div className="space-y-1">
+                        <div className="flex flex-col gap-1">
                             {branches.map(branch => (
-                                <button
-                                    key={branch.id}
-                                    onClick={() => {
-                                        setSelectedBranch(branch.name === selectedBranch ? '' : branch.name);
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedBranch === branch.name ? 'bg-blue-600/10 text-blue-400 border-blue-600/20' : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-gray-200'}`}
-                                >
-                                    {branch.name}
-                                </button>
+                                <label key={branch.id} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-[#1a1d24] cursor-pointer transition-colors">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedBranches.includes(branch.name)}
+                                            onChange={() => handleBranchToggle(branch.name)}
+                                            className="h-4 w-4 rounded border-gray-600 bg-transparent text-[#135bec] focus:ring-0 focus:ring-offset-0 transition-all checked:bg-[#135bec] checked:border-[#135bec]"
+                                        />
+                                    </div>
+                                    <span className="text-sm text-gray-300 font-medium group-hover:text-white">{branch.name}</span>
+                                </label>
                             ))}
-                            {branches.length === 0 && <div className="text-xs text-gray-600 px-3">No branches found</div>}
+                            {branches.length === 0 && <div className="text-xs text-gray-600 px-2">No branches found</div>}
                         </div>
+                        {userProfile?.role === 'admin' && (
+                            <button
+                                onClick={() => setIsBranchModalOpen(true)}
+                                className="mt-3 text-xs text-[#135bec] hover:underline flex items-center gap-1"
+                            >
+                                <Settings size={12} />
+                                Manage Branches
+                            </button>
+                        )}
                     </div>
 
-                    {/* Semester Filter */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-4 px-2">
-                            <Book className="size-4 text-green-500" />
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Semester</h3>
-                        </div>
-                        <div className="px-1">
-                            <div className="relative">
-                                <select
-                                    value={selectedSemester}
-                                    onChange={(e) => {
-                                        setSelectedSemester(e.target.value ? Number(e.target.value) : '');
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className="w-full bg-[#0B0E14] border border-gray-700 rounded-lg py-2.5 px-4 text-sm text-gray-200 outline-none focus:border-blue-500 appearance-none cursor-pointer transition-colors"
-                                >
-                                    <option value="">All Semesters</option>
-                                    {semesters.map(s => <option key={s} value={s}>Semester {s}</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                    <div className="h-px bg-[#282e39] mx-5 my-4"></div>
+
+                    {/* Filters: Semester */}
+                    <div className="px-5">
+                        <h3 className="text-xs font-bold text-[#9da6b9] uppercase tracking-wider mb-3">Semester</h3>
+                        <div className="relative">
+                            <select
+                                value={selectedSemester}
+                                onChange={(e) => setSelectedSemester(e.target.value ? Number(e.target.value) : '')}
+                                className="w-full appearance-none rounded-lg bg-[#1a1d24] border border-[#282e39] text-sm text-white px-3 py-2.5 focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] outline-none cursor-pointer"
+                            >
+                                <option value="">Select Semester</option>
+                                {semesters.map(s => <option key={s} value={s}>Semester {s}</option>)}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9da6b9]">
+                                <ChevronDown className="w-4 h-4" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Type Filter */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-4 px-2">
-                            <Filter className="size-4 text-purple-500" />
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Resource Type</h3>
-                        </div>
-                        <div className="flex flex-wrap gap-2 px-1">
+                    <div className="h-px bg-[#282e39] mx-5 my-4"></div>
+
+                    {/* Filters: Resource Type */}
+                    <div className="px-5">
+                        <h3 className="text-xs font-bold text-[#9da6b9] uppercase tracking-wider mb-3">Resource Type</h3>
+                        <div className="flex flex-wrap gap-2">
                             {types.map(t => (
                                 <button
                                     key={t}
                                     onClick={() => setSelectedType(selectedType === t ? '' : t)}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${selectedType === t ? 'bg-white text-black border-white' : 'bg-[#0B0E14] text-gray-400 border-gray-700 hover:border-gray-500'}`}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedType === t
+                                        ? 'bg-[#135bec]/20 text-[#135bec] border-[#135bec]/30'
+                                        : 'bg-[#1a1d24] text-[#9da6b9] border-[#282e39] hover:border-gray-500 hover:text-white'
+                                        }`}
                                 >
                                     {t}
                                 </button>
                             ))}
                         </div>
                     </div>
-                </div>
-            </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden relative w-full">
-                {/* Header */}
-                <header className="h-16 lg:h-20 border-b border-gray-800 flex items-center justify-between px-4 lg:px-8 bg-[#0B0E14] z-10 shrink-0 gap-4">
-                    <div className="flex items-center gap-4 flex-1">
-                        <button
-                            onClick={() => setIsMobileMenuOpen(true)}
-                            className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
-                        >
-                            <Menu size={24} />
-                        </button>
-
-                        <div className="flex-1 max-w-2xl">
-                            <div className="relative group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 lg:w-5 lg:h-5 group-focus-within:text-blue-500 transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="block w-full rounded-xl bg-[#11161D] border border-gray-800 text-gray-200 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm pl-10 lg:pl-12 py-2.5 lg:py-3 transition-all outline-none"
-                                />
+                    {/* Promo/Help */}
+                    <div className="mt-auto p-5">
+                        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-white/5">
+                            <div className="flex items-center gap-2 mb-2 text-white">
+                                <span className="material-symbols-outlined text-[18px]">help</span>
+                                <span className="text-sm font-bold">Need Help?</span>
                             </div>
+                            <p className="text-xs text-[#9da6b9] mb-3 leading-relaxed">Can't find a specific resource? Request it from the community.</p>
+                            <button className="w-full py-1.5 rounded bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors">Request Resource</button>
                         </div>
                     </div>
+                </aside>
 
-                    <div className="flex items-center gap-2 lg:gap-4 shrink-0">
-                        {userProfile ? (
-                            <>
-                                {userProfile.role === 'admin' && (
-                                    <>
-                                        <Link href="/admin/upload" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20" title="Upload New Resource">
-                                            <Plus size={18} />
-                                            <span className="hidden sm:inline">Upload</span>
-                                        </Link>
-                                        <Link href="/admin/dashboard" className="hidden sm:flex items-center gap-2 bg-[#1C2333] hover:bg-[#252D3F] border border-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                            <span>Admin</span>
-                                        </Link>
-                                    </>
-                                )}
-                                <Link href="/profile">
-                                    <div className="flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-gray-800">
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-medium text-white">{userProfile.full_name}</p>
-                                            <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
-                                        </div>
-                                        <div className="size-8 lg:size-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white ring-2 ring-gray-800 hover:ring-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-500/20">
-                                            <User size={18} />
-                                        </div>
+                {/* Main Content */}
+                <main className="flex-1 overflow-y-auto custom-scrollbar bg-[#0b0d11]">
+                    <div className="max-w-[1400px] mx-auto p-4 lg:p-8">
+                        {/* Hero Section */}
+                        <div className="relative overflow-hidden rounded-2xl bg-[#135bec] p-6 lg:p-8 mb-8 group">
+                            {/* Background Elements */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#101622] via-[#135bec]/80 to-[#135bec] opacity-90"></div>
+                            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+                            <div className="absolute right-10 bottom-10 h-32 w-32 rounded-full bg-purple-500/20 blur-2xl"></div>
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                                <div className="max-w-xl">
+                                    <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur-md mb-4 border border-white/10">
+                                        <span className="size-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                                        Exam Season Live
                                     </div>
-                                </Link>
-                            </>
-                        ) : (
-                            <Link href="/login" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-blue-600/20">
-                                <LogIn size={18} />
-                                <span className="hidden sm:inline">Sign In</span>
-                            </Link>
-                        )}
-                    </div>
-                </header>
-
-                {/* Resource Feed */}
-                <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0B0E14]">
-                    <div className="max-w-[1600px] mx-auto">
-                        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 lg:mb-8 gap-4">
-                            <div>
-                                <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-                                    {selectedBranch ? `${selectedBranch}` : 'All Resources'}
-                                </h2>
-                                <p className="text-gray-400 text-sm">
-                                    {selectedSemester ? `Semester ${selectedSemester} • ` : ''}
-                                    Browse and download academic materials.
-                                </p>
+                                    <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2 tracking-tight">Mid-Sem Prep: Digital Logic Design</h1>
+                                    <p className="text-blue-100 text-sm md:text-base leading-relaxed">Curated list of top-rated handwritten notes, past year papers, and lab manuals specifically for the upcoming mid-semester examinations.</p>
+                                </div>
+                                <button className="shrink-0 rounded-lg bg-white text-[#135bec] hover:bg-gray-50 px-5 py-2.5 text-sm font-bold shadow-lg transition-colors flex items-center gap-2">
+                                    View Collection
+                                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                </button>
                             </div>
-                            <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700 w-fit">
-                                {resources.length} Result{resources.length !== 1 ? 's' : ''}
-                            </span>
                         </div>
 
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[#135bec]">trending_up</span>
+                                {selectedBranches.length > 0 ? selectedBranches.join(', ') : 'All Resources'}
+                            </h2>
+                            <div className="flex items-center gap-2 text-sm text-[#9da6b9]">
+                                <span className="hidden sm:inline">Sort by:</span>
+                                <button className="flex items-center gap-1 font-medium text-white hover:text-[#135bec]">
+                                    Popularity
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Resource Grid */}
                         {loading ? (
                             <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-4">
                                 <div className="size-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
@@ -397,72 +413,74 @@ export default function Dashboard() {
                                     Try adjusting your search or filters.
                                 </p>
                                 <button
-                                    onClick={() => {
-                                        setSelectedBranch('');
-                                        setSelectedSemester('');
-                                        setSelectedType('');
-                                        setSearchQuery('');
-                                    }}
+                                    onClick={clearFilters}
                                     className="mt-6 text-blue-400 hover:text-blue-300 font-medium text-sm hover:underline"
                                 >
                                     Clear all filters
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
-                                {resources.map(res => (
-                                    <div key={res.id} className="group flex flex-col bg-[#11161D] border border-gray-800 rounded-xl overflow-hidden hover:border-gray-600 hover:shadow-xl hover:shadow-black/40 transition-all duration-300 relative">
-                                        <div className="p-5 flex-1">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className={`p-3 rounded-xl flex items-center justify-center ${res.type === 'Notes' ? 'bg-blue-500/10 text-blue-500' : res.type === 'Video' ? 'bg-purple-500/10 text-purple-500' : 'bg-gray-800 text-gray-400'}`}>
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+                                    {resources.map(res => (
+                                        <div key={res.id} className="group flex flex-col gap-4 rounded-xl border border-[#282e39] bg-[#1a1d24] p-4 hover:border-[#135bec]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#135bec]/5 hover:-translate-y-1 cursor-pointer">
+                                            <div className="flex items-start justify-between">
+                                                <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${getTypeColor(res.type)}`}>
                                                     {getTypeIcon(res.type)}
                                                 </div>
-                                                <span className={`text-[10px] px-2 py-1 rounded font-mono border ${getBranchColor(res.branch)}`}>
-                                                    Sem {res.semester}
-                                                </span>
-                                            </div>
-
-                                            <h3 className="text-lg font-semibold text-gray-100 line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors h-[3.5rem] leading-tight" title={res.title}>{res.title}</h3>
-
-                                            <div className="flex items-center gap-2 text-xs text-gray-500 font-mono mb-4">
-                                                <span className="truncate max-w-[150px]">{res.subject_code}</span>
-                                                <span>•</span>
-                                                <span>{res.type}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-4 border-t border-gray-800 bg-gray-900/30 flex items-center justify-between group-hover:bg-gray-800/50 transition-colors">
-                                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span className="truncate max-w-[100px]">By {res.uploaded_by || 'Admin'}</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                {userProfile?.role === 'admin' && (
-                                                    <button
-                                                        onClick={(e) => handleDeleteResource(res.id, e)}
-                                                        className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                                                        title="Delete (Admin)"
-                                                        disabled={deletingId === res.id}
-                                                    >
-                                                        {deletingId === res.id ? <Loader2 className="animate-spin size-3" /> : <Trash2 size={14} />}
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-white" title="Preview">
+                                                        <Eye className="w-4 h-4" />
                                                     </button>
-                                                )}
-                                                <button
-                                                    onClick={() => handleDownload(res.file_url)}
-                                                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-gray-800 hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-all"
-                                                >
-                                                    <Download size={14} />
-                                                    Download
-                                                </button>
+                                                    <button
+                                                        onClick={() => handleDownload(res.file_url)}
+                                                        className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-[#135bec]"
+                                                        title="Download"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                    </button>
+                                                    {userProfile?.role === 'admin' && (
+                                                        <button
+                                                            onClick={(e) => handleDeleteResource(res.id, e)}
+                                                            className="p-1.5 rounded-md hover:bg-white/10 text-[#9da6b9] hover:text-red-400"
+                                                            title="Delete"
+                                                            disabled={deletingId === res.id}
+                                                        >
+                                                            {deletingId === res.id ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-[#135bec] transition-colors">{res.title}</h3>
+                                                <p className="mt-1.5 text-xs text-[#9da6b9] flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-[14px]">person</span>
+                                                    {res.uploaded_by || 'Admin'}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+                                                <div className="flex gap-2">
+                                                    <span className={`inline-flex items-center rounded px-2 py-0.5 font-mono text-[10px] font-medium border ${getBranchColor(res.branch)}`}>{res.branch}</span>
+                                                    <span className="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">Sem {res.semester}</span>
+                                                </div>
+                                                <span className="font-mono text-[10px] text-[#9da6b9]">{res.type}</span>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+
+                                {/* Load More */}
+                                <div className="flex justify-center mb-8">
+                                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-[#282e39] bg-[#1a1d24] text-[#9da6b9] text-sm font-medium hover:text-white hover:border-gray-500 transition-all">
+                                        Load more resources
+                                        <ChevronDown className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     )
 }

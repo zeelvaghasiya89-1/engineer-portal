@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  /* Primary Colors */
+  --primary: #135bec;
+  --primary-hover: #1d66f0;
+  
+  /* Light Theme */
+  --background-light: #f6f6f8;
   --foreground: #171717;
+  
+  /* Dark Theme */
+  --background-dark: #111318;
+  --surface-dark: #1a1d24;
+  --border-dark: #282e39;
+  --text-secondary: #9da6b9;
+  --card-dark: #1C2333;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,6 +25,7 @@
 }
 
 body {
+  font-family: 'Inter', sans-serif;
   color: var(--foreground);
   background: var(--background);
 }
@@ -33,4 +46,50 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3b4354;
+}
+
+/* Global scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #101622;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Custom select arrow override */
+select.custom-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239da6b9' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(to right, #ffffff, #9da6b9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animation utilities */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }

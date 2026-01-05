@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Loader2 } from 'lucide-react'
+import { Loader2, CloudUpload } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -17,7 +17,7 @@ export default function AdminUpload() {
     const [branch, setBranch] = useState('')
     const [semester, setSemester] = useState('')
     const [subjectCode, setSubjectCode] = useState('')
-    const [type, setType] = useState('Lecture Notes')
+    const [type, setType] = useState('Notes')
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -107,25 +107,38 @@ export default function AdminUpload() {
         }
     }
 
+    const resourceTypes = [
+        { value: 'Notes', label: 'Lecture Notes', icon: 'menu_book' },
+        { value: 'Labs', label: 'Lab Manual', icon: 'science' },
+        { value: 'Papers', label: 'Previous Year Paper', icon: 'article' },
+        { value: 'Books', label: 'Textbook', icon: 'book' },
+    ]
+
     return (
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
-                <header className="mb-8">
-                    <h2 className="text-3xl font-bold text-white mb-2">Upload Resource</h2>
-                    <p className="text-gray-400">Add new study materials to the student database.</p>
-                </header>
-
-                {message && (
-                    <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                        {message.text}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {/* Header */}
+            <header className="w-full px-4 md:px-8 py-8 pb-4 shrink-0 z-10 bg-[#0B0E14]/95 backdrop-blur-sm sticky top-0">
+                <div className="max-w-5xl mx-auto w-full">
+                    <div className="flex flex-col gap-2">
+                        <h2 className="text-white text-2xl md:text-3xl font-black leading-tight tracking-tight">Upload New Engineering Resource</h2>
+                        <p className="text-[#9da6b9] text-base">Add new study materials, notes, or papers to the student database.</p>
                     </div>
-                )}
+                </div>
+            </header>
 
-                <form onSubmit={handleUpload} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* Scrollable Content Area */}
+            <div className="px-4 md:px-8 pb-20">
+                <div className="max-w-5xl mx-auto w-full flex flex-col gap-8">
+
+                    {message && (
+                        <div className={`p-4 rounded-lg border ${message.type === 'success' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                            {message.text}
+                        </div>
+                    )}
 
                     {/* Upload Zone */}
-                    <div className="lg:col-span-2">
-                        <div className={`group relative flex flex-col items-center justify-center gap-6 rounded-xl border-2 border-dashed ${file ? 'border-primary bg-primary/5' : 'border-gray-700 bg-gray-800/50'} hover:border-primary hover:bg-gray-800 px-6 py-10 lg:py-16 transition-all`}>
+                    <section>
+                        <div className={`group relative flex flex-col items-center justify-center gap-6 rounded-xl border-2 border-dashed ${file ? 'border-[#135bec] bg-[#135bec]/5' : 'border-[#282e39] bg-[#1a1d24]/50'} hover:border-[#135bec] hover:bg-[#1a1d24] px-6 py-10 lg:py-16 transition-all cursor-pointer`}>
                             <input
                                 id="file-upload"
                                 type="file"
@@ -133,81 +146,118 @@ export default function AdminUpload() {
                                 onChange={handleFileChange}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
-                            <div className="bg-gray-800 p-4 rounded-full border border-gray-700 group-hover:border-primary/50 transition-all">
-                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary" style={{ fontSize: '40px' }}>cloud_upload</span>
+                            <div className="bg-[#1a1d24] p-4 rounded-full border border-[#282e39] group-hover:border-[#135bec]/50 group-hover:shadow-[0_0_20px_rgba(19,91,236,0.15)] transition-all">
+                                <CloudUpload className={`w-10 h-10 ${file ? 'text-[#135bec]' : 'text-[#9da6b9]'} group-hover:text-[#135bec] transition-colors`} />
                             </div>
                             <div className="flex flex-col items-center gap-1 text-center">
-                                <p className="text-white text-lg font-bold">{file ? file.name : 'Drag PDF or ZIP files here'}</p>
-                                <p className="text-gray-500 text-sm">{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Supported formats: PDF, ZIP (Max 50MB)'}</p>
+                                <p className="text-white text-lg font-bold">{file ? file.name : 'Drag PDF or ZIP files here, or click to browse'}</p>
+                                <p className="text-[#9da6b9] text-sm">{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Supported formats: PDF, ZIP (Max 50MB)'}</p>
                             </div>
+                            <button type="button" className="flex items-center justify-center rounded-lg h-10 px-6 bg-[#1a1d24] border border-[#282e39] text-white text-sm font-bold hover:bg-[#282e39] transition-colors">
+                                Browse Files
+                            </button>
                         </div>
-                    </div>
+                    </section>
 
-                    {/* Column 1 */}
-                    <div className="flex flex-col gap-6 bg-[#11161D] p-6 rounded-xl border border-gray-800">
-                        <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">school</span>
-                            Academic Info
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-gray-400 text-sm font-medium mb-1 block">Branch</label>
-                                <select required value={branch} onChange={e => setBranch(e.target.value)} className="w-full rounded-lg bg-[#0B0E14] border border-gray-700 text-white h-12 px-4 focus:ring-1 focus:ring-primary focus:border-primary outline-none">
-                                    <option value="">Select Branch</option>
+                    {/* Form Grid */}
+                    <form onSubmit={handleUpload} className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+                        {/* Column 1: Academic Info */}
+                        <div className="flex flex-col gap-6 bg-[#1a1d24]/30 p-6 rounded-xl border border-[#282e39]/50">
+                            <div className="flex items-center gap-2 pb-2 border-b border-[#282e39]/50 mb-2">
+                                <span className="material-symbols-outlined text-[#135bec]" style={{ fontSize: '20px' }}>school</span>
+                                <h3 className="text-white font-semibold text-lg">Academic Info</h3>
+                            </div>
+                            <label className="flex flex-col gap-2">
+                                <span className="text-[#9da6b9] text-sm font-medium">Branch / Department</span>
+                                <select
+                                    required
+                                    value={branch}
+                                    onChange={e => setBranch(e.target.value)}
+                                    className="w-full rounded-lg bg-[#0B0E14] border border-[#282e39] text-white placeholder-[#9da6b9] focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] h-12 px-4 text-base transition-shadow outline-none"
+                                >
+                                    <option value="">Select Branch (e.g. CSE, ME)</option>
                                     {branches.map(b => (
                                         <option key={b.id} value={b.name}>{b.name}</option>
                                     ))}
                                 </select>
-                            </div>
-                            <div>
-                                <label className="text-gray-400 text-sm font-medium mb-1 block">Semester</label>
-                                <select required value={semester} onChange={e => setSemester(e.target.value)} className="w-full rounded-lg bg-[#0B0E14] border border-gray-700 text-white h-12 px-4 focus:ring-1 focus:ring-primary focus:border-primary outline-none">
-                                    <option value="">Select Semester</option>
+                            </label>
+                            <label className="flex flex-col gap-2">
+                                <span className="text-[#9da6b9] text-sm font-medium">Semester</span>
+                                <select
+                                    required
+                                    value={semester}
+                                    onChange={e => setSemester(e.target.value)}
+                                    className="w-full rounded-lg bg-[#0B0E14] border border-[#282e39] text-white placeholder-[#9da6b9] focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] h-12 px-4 text-base transition-shadow outline-none"
+                                >
+                                    <option value="">Select Semester (1-8)</option>
                                     {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>Semester {s}</option>)}
                                 </select>
-                            </div>
-                            <div>
-                                <label className="text-gray-400 text-sm font-medium mb-1 block">Subject Code</label>
-                                <input required type="text" value={subjectCode} onChange={e => setSubjectCode(e.target.value)} placeholder="e.g. KCS-401" className="w-full rounded-lg bg-[#0B0E14] border border-gray-700 text-white h-12 px-4 focus:ring-1 focus:ring-primary focus:border-primary outline-none" />
-                            </div>
+                            </label>
+                            <label className="flex flex-col gap-2">
+                                <span className="text-[#9da6b9] text-sm font-medium">Subject Code & Name</span>
+                                <input
+                                    required
+                                    type="text"
+                                    value={subjectCode}
+                                    onChange={e => setSubjectCode(e.target.value)}
+                                    placeholder="e.g., KCS-401 Data Structures"
+                                    className="w-full rounded-lg bg-[#0B0E14] border border-[#282e39] text-white placeholder-[#9da6b9] focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] h-12 px-4 text-base transition-shadow outline-none"
+                                />
+                            </label>
                         </div>
-                    </div>
 
-                    {/* Column 2 */}
-                    <div className="flex flex-col gap-6 bg-[#11161D] p-6 rounded-xl border border-gray-800">
-                        <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">description</span>
-                            Resource Details
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-gray-400 text-sm font-medium mb-1 block">Title</label>
-                                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Resource Title" className="w-full rounded-lg bg-[#0B0E14] border border-gray-700 text-white h-12 px-4 focus:ring-1 focus:ring-primary focus:border-primary outline-none" />
+                        {/* Column 2: Resource Details */}
+                        <div className="flex flex-col gap-6 bg-[#1a1d24]/30 p-6 rounded-xl border border-[#282e39]/50 h-full">
+                            <div className="flex items-center gap-2 pb-2 border-b border-[#282e39]/50 mb-2">
+                                <span className="material-symbols-outlined text-[#135bec]" style={{ fontSize: '20px' }}>description</span>
+                                <h3 className="text-white font-semibold text-lg">Resource Details</h3>
                             </div>
-                            <div>
-                                <label className="text-gray-400 text-sm font-medium mb-1 block">Type</label>
-                                <div className="space-y-2 text-white">
-                                    {['Notes', 'Papers', 'Labs', 'Books'].map(t => (
-                                        <label key={t} className="flex items-center gap-3 p-3 rounded-lg border border-gray-700 bg-[#0B0E14] hover:border-primary/50 cursor-pointer transition-colors">
-                                            <input type="radio" name="type" value={t} checked={type === t} onChange={e => setType(e.target.value)} className="text-primary focus:ring-primary bg-transparent border-gray-500" />
-                                            <span className="text-sm font-medium">{t}</span>
+                            <label className="flex flex-col gap-2">
+                                <span className="text-[#9da6b9] text-sm font-medium">Document Title</span>
+                                <input
+                                    required
+                                    type="text"
+                                    value={title}
+                                    onChange={e => setTitle(e.target.value)}
+                                    placeholder="Enter a clear title for the resource"
+                                    className="w-full rounded-lg bg-[#0B0E14] border border-[#282e39] text-white placeholder-[#9da6b9] focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] h-12 px-4 text-base transition-shadow outline-none"
+                                />
+                            </label>
+                            <div className="flex flex-col gap-3">
+                                <span className="text-[#9da6b9] text-sm font-medium">Resource Type</span>
+                                <div className="flex flex-col gap-3">
+                                    {resourceTypes.map(rt => (
+                                        <label key={rt.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${type === rt.value ? 'border-[#135bec]/50 bg-[#135bec]/10' : 'border-[#282e39] bg-[#0B0E14] hover:border-[#135bec]/30'}`}>
+                                            <input
+                                                type="radio"
+                                                name="resource_type"
+                                                value={rt.value}
+                                                checked={type === rt.value}
+                                                onChange={e => setType(e.target.value)}
+                                                className="w-5 h-5 text-[#135bec] bg-transparent border-gray-500 focus:ring-[#135bec] focus:ring-2"
+                                            />
+                                            <span className="material-symbols-outlined text-[#9da6b9]" style={{ fontSize: '20px' }}>{rt.icon}</span>
+                                            <span className="text-white text-sm font-medium">{rt.label}</span>
                                         </label>
                                     ))}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="lg:col-span-2 pt-4">
-                        <button disabled={loading} type="submit" className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg h-14 rounded-xl shadow-lg shadow-blue-900/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                            {loading ? <Loader2 className="animate-spin" /> : <span className="material-symbols-outlined">publish</span>}
-                            {loading ? 'Uploading...' : 'Publish Resource'}
-                        </button>
-                    </div>
-
-                </form>
+                        {/* Footer Action - Spanning both columns */}
+                        <div className="lg:col-span-2 pt-4">
+                            <button
+                                disabled={loading}
+                                type="submit"
+                                className="w-full flex items-center justify-center gap-3 bg-[#135bec] hover:bg-blue-600 text-white font-bold text-lg h-14 rounded-xl shadow-lg shadow-blue-900/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? <Loader2 className="animate-spin" /> : <span className="material-symbols-outlined">publish</span>}
+                                {loading ? 'Uploading...' : 'Publish to Student Portal'}
+                            </button>
+                            <p className="text-center text-[#9da6b9] text-xs mt-4">By publishing, you confirm that this resource complies with the university's academic integrity policy.</p>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     )

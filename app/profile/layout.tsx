@@ -101,7 +101,7 @@ export default function ProfileLayout({
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* LEFT COLUMN: Sidebar */}
                     <aside className={`
-                        fixed lg:static inset-y-0 left-0 w-80 flex-shrink-0 flex flex-col gap-6 z-50
+                        fixed lg:static inset-y-0 left-0 w-80 flex-shrink-0 flex flex-col gap-6 z-50 lg:z-0
                         bg-[#101622] lg:bg-transparent p-4 lg:p-0 overflow-y-auto
                         transition-transform duration-300 ease-in-out
                         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}

@@ -11,6 +11,7 @@ export default function AdminUpload() {
     const [loading, setLoading] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [branches, setBranches] = useState<{ id: string, name: string }[]>([])
+    const [folders, setFolders] = useState<{ id: string, name: string, parent_id: string | null }[]>([])
 
     // Form State
     const [title, setTitle] = useState('')
@@ -18,6 +19,7 @@ export default function AdminUpload() {
     const [semester, setSemester] = useState('')
     const [subjectCode, setSubjectCode] = useState('')
     const [type, setType] = useState('Notes')
+    const [selectedFolder, setSelectedFolder] = useState('')
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -31,6 +33,9 @@ export default function AdminUpload() {
 
             const { data } = await supabase.from('branches').select('*').order('name')
             if (data) setBranches(data)
+
+            const { data: folderData } = await supabase.from('folders').select('*').order('name')
+            if (folderData) setFolders(folderData)
         }
         init()
     }, [router])
@@ -82,7 +87,8 @@ export default function AdminUpload() {
                 subject_code: subjectCode,
                 type,
                 file_url: publicUrl,
-                uploaded_by: user.id
+                uploaded_by: user.id,
+                folder_id: selectedFolder || null
             })
 
             if (dbError) throw dbError
@@ -90,9 +96,9 @@ export default function AdminUpload() {
             setMessage({ type: 'success', text: 'Resource uploaded successfully!' })
 
             // Clear form
-            setTitle('')
             setSubjectCode('')
             setFile(null)
+            setSelectedFolder('')
 
             const fileInput = document.getElementById('file-upload') as HTMLInputElement | null
             if (fileInput) {
@@ -178,6 +184,22 @@ export default function AdminUpload() {
                                     <option value="">Select Branch (e.g. CSE, ME)</option>
                                     {branches.map(b => (
                                         <option key={b.id} value={b.name}>{b.name}</option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label className="flex flex-col gap-2">
+                                <span className="text-[#9da6b9] text-sm font-medium">Folder (Optional)</span>
+                                <select
+                                    value={selectedFolder}
+                                    onChange={e => setSelectedFolder(e.target.value)}
+                                    className="w-full rounded-lg bg-[#0B0E14] border border-[#282e39] text-white placeholder-[#9da6b9] focus:border-[#135bec] focus:ring-1 focus:ring-[#135bec] h-12 px-4 text-base transition-shadow outline-none"
+                                >
+                                    <option value="">No Folder (Root)</option>
+                                    {folders.map(f => (
+                                        <option key={f.id} value={f.id}>
+                                            {f.parent_id ? '└ ' : ''}📁 {f.name}
+                                        </option>
                                     ))}
                                 </select>
                             </label>

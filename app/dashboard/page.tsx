@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye, Check, ArrowUpDown, FolderPlus } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye, Check, ArrowUpDown, FolderPlus, FolderInput } from 'lucide-react'
 import ManageBranchesModal from '@/app/components/ManageBranchesModal'
 import FolderTree, { FolderType } from '@/app/components/FolderTree'
 import CreateFolderModal from '@/app/components/CreateFolderModal'
+import MoveToFolderModal from '@/app/components/MoveToFolderModal'
 
 // Types
 type Resource = {
@@ -66,6 +67,11 @@ export default function Dashboard() {
     const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
     const [showCreateFolder, setShowCreateFolder] = useState(false)
     const [parentFolderForCreate, setParentFolderForCreate] = useState<FolderType | null>(null)
+
+    // Move to folder
+    const [showMoveModal, setShowMoveModal] = useState(false)
+    const [resourceToMove, setResourceToMove] = useState<string | null>(null)
+    const [currentResourceFolder, setCurrentResourceFolder] = useState<string | null>(null)
 
     // Mobile specific
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -294,6 +300,14 @@ export default function Dashboard() {
                 onFolderCreated={fetchFolders}
                 parentFolder={parentFolderForCreate}
                 existingFolders={folders}
+            />
+            <MoveToFolderModal
+                isOpen={showMoveModal}
+                onClose={() => setShowMoveModal(false)}
+                onMoved={fetchResources}
+                resourceId={resourceToMove}
+                currentFolderId={currentResourceFolder}
+                folders={folders}
             />
 
             {/* Header */}
@@ -671,6 +685,20 @@ export default function Dashboard() {
                                                             {deletingId === res.id ? <Loader2 className="animate-spin w-5 h-5 sm:w-4 sm:h-4" /> : <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />}
                                                         </button>
                                                     )}
+                                                    {userProfile?.role === 'admin' && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                setResourceToMove(res.id)
+                                                                setCurrentResourceFolder(res.folder_id || null)
+                                                                setShowMoveModal(true)
+                                                            }}
+                                                            className="p-2 sm:p-1.5 rounded-md bg-[#282e39] sm:bg-transparent hover:bg-white/10 text-[#9da6b9] hover:text-white"
+                                                            title="Move to Folder"
+                                                        >
+                                                            <FolderInput className="w-5 h-5 sm:w-4 sm:h-4" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div>
@@ -707,7 +735,7 @@ export default function Dashboard() {
                         )}
                     </div>
                 </main>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }

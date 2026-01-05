@@ -57,7 +57,7 @@ export default function AdminManage() {
         await supabase.auth.getUser()
 
         const [resRes, resBranches] = await Promise.all([
-            supabase.from('resources').select('*').order('created_at', { ascending: false }),
+            supabase.from('resources').select('*'),
             supabase.from('branches').select('*').order('name')
         ])
 
@@ -65,7 +65,13 @@ export default function AdminManage() {
             console.error('Fetch resources error:', resRes.error)
             setMessage({ type: 'error', text: 'Failed to load resources: ' + resRes.error.message })
         } else if (resRes.data) {
-            setResources(resRes.data)
+            // Client-side sort to handle missing created_at column gracefully
+            const sorted = [...resRes.data].sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+                const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+                return dateB - dateA
+            })
+            setResources(sorted)
         }
 
         if (resBranches.data) setBranches(resBranches.data)
@@ -313,7 +319,7 @@ export default function AdminManage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-slate-400">
-                                                {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                {r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">

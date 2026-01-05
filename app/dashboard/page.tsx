@@ -159,8 +159,34 @@ export default function Dashboard() {
         setDeletingId(null)
     }
 
-    const handleDownload = (url: string) => {
-        window.open(url, '_blank')
+    const handleDownload = async (url: string, title?: string) => {
+        try {
+            // Fetch the file
+            const response = await fetch(url)
+            const blob = await response.blob()
+
+            // Create a download link
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = downloadUrl
+
+            // Extract filename from URL or use title
+            const urlParts = url.split('/')
+            const filename = title || urlParts[urlParts.length - 1] || 'download'
+            link.download = filename
+
+            // Trigger download
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+
+            // Clean up
+            window.URL.revokeObjectURL(downloadUrl)
+        } catch (error) {
+            console.error('Download failed:', error)
+            // Fallback to opening in new window if download fails
+            window.open(url, '_blank')
+        }
     }
 
     const clearFilters = () => {
@@ -561,7 +587,7 @@ export default function Dashboard() {
                                         <div
                                             key={res.id}
                                             className="group flex flex-col gap-4 rounded-xl border border-[#282e39] bg-[#1a1d24] p-4 hover:border-[#135bec]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#135bec]/5 hover:-translate-y-1 cursor-pointer"
-                                            onClick={() => handleDownload(res.file_url)}
+                                            onClick={() => handleDownload(res.file_url, res.title)}
                                         >
                                             <div className="flex items-start justify-between">
                                                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${getTypeColor(res.type)}`}>
@@ -574,7 +600,8 @@ export default function Dashboard() {
                                                         title="Preview"
                                                         onClick={(e) => {
                                                             e.stopPropagation()
-                                                            handleDownload(res.file_url)
+                                                            // Preview opens in new window
+                                                            window.open(res.file_url, '_blank')
                                                         }}
                                                     >
                                                         <Eye className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -582,7 +609,7 @@ export default function Dashboard() {
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation()
-                                                            handleDownload(res.file_url)
+                                                            handleDownload(res.file_url, res.title)
                                                         }}
                                                         className="p-2 sm:p-1.5 rounded-md bg-[#135bec] sm:bg-transparent hover:bg-white/10 text-white sm:text-[#9da6b9] sm:hover:text-[#135bec]"
                                                         title="Download"

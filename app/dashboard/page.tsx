@@ -212,6 +212,8 @@ export default function Dashboard() {
         }
     }
 
+
+
     const clearFilters = () => {
         setSelectedBranches([])
         setSelectedSemester('')

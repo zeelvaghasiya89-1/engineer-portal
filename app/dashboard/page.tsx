@@ -411,7 +411,7 @@ export default function Dashboard() {
                                         ))}
                                     </div>
                                     <div className="px-4 py-2 border-t border-[#282e39]">
-                                        <button className="text-sm text-[#135bec] hover:underline w-full text-center">View all notifications</button>
+                                        <Link href="/notifications" className="text-sm text-[#135bec] hover:underline w-full text-center block">View all notifications</Link>
                                     </div>
                                 </div>
                             </>

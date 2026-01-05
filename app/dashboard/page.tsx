@@ -56,11 +56,7 @@ export default function Dashboard() {
 
     // Notifications
     const [showNotifications, setShowNotifications] = useState(false)
-    const [notifications] = useState([
-        { id: 1, text: 'New notes added for Data Structures', time: '2 hours ago', unread: true },
-        { id: 2, text: 'Mid-sem papers uploaded for Civil', time: '5 hours ago', unread: true },
-        { id: 3, text: 'Lab manual updated for Electronics', time: '1 day ago', unread: false },
-    ])
+    const [notifications, setNotifications] = useState<{ id: string, message: string, type: string, created_at: string }[]>([])
 
     // Folders
     const [folders, setFolders] = useState<FolderType[]>([])
@@ -106,8 +102,18 @@ export default function Dashboard() {
             }
         }
 
-        await Promise.all([fetchBranches(), fetchResources(), fetchFolders()])
+        await Promise.all([fetchBranches(), fetchResources(), fetchFolders(), fetchNotifications()])
         setLoading(false)
+    }
+
+    const fetchNotifications = async () => {
+        const { data } = await supabase
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10)
+
+        if (data) setNotifications(data)
     }
 
     const fetchFolders = async () => {
@@ -380,7 +386,7 @@ export default function Dashboard() {
                             className="text-[#9da6b9] hover:text-white transition-colors relative p-2"
                         >
                             <Bell className="w-5 h-5" />
-                            {notifications.filter(n => n.unread).length > 0 && (
+                            {notifications.length > 0 && (
                                 <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full border-2 border-[#111318]"></span>
                             )}
                         </button>
@@ -392,13 +398,15 @@ export default function Dashboard() {
                                 <div className="absolute right-0 top-full mt-2 w-80 bg-[#1a1d24] border border-[#282e39] rounded-xl shadow-2xl z-40 overflow-hidden">
                                     <div className="px-4 py-3 border-b border-[#282e39] flex items-center justify-between">
                                         <h3 className="font-semibold text-white">Notifications</h3>
-                                        <span className="text-xs text-[#9da6b9]">{notifications.filter(n => n.unread).length} new</span>
+                                        <span className="text-xs text-[#9da6b9]">{notifications.length} recent</span>
                                     </div>
                                     <div className="max-h-80 overflow-y-auto">
                                         {notifications.map(notif => (
-                                            <div key={notif.id} className={`px-4 py-3 border-b border-[#282e39]/50 hover:bg-[#282e39]/30 cursor-pointer transition-colors ${notif.unread ? 'bg-[#135bec]/5' : ''}`}>
-                                                <p className="text-sm text-white">{notif.text}</p>
-                                                <p className="text-xs text-[#9da6b9] mt-1">{notif.time}</p>
+                                            <div key={notif.id} className="px-4 py-3 border-b border-[#282e39]/50 hover:bg-[#282e39]/30 cursor-pointer transition-colors">
+                                                <p className="text-sm text-white">{notif.message}</p>
+                                                <p className="text-xs text-[#9da6b9] mt-1">
+                                                    {new Date(notif.created_at).toLocaleString()}
+                                                </p>
                                             </div>
                                         ))}
                                     </div>

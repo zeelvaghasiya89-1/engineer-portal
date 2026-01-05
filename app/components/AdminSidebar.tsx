@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, FileText, Upload, Layers, LogOut, GraduationCap, X, Settings, PieChart } from 'lucide-react'
+import { LayoutDashboard, FileText, Upload, Layers, LogOut, GraduationCap, X, Settings, PieChart, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -29,9 +29,9 @@ export default function AdminSidebar() {
         }
         fetchUser()
     }, [])
-
     const links = [
         { href: '/admin/dashboard', label: 'Dashboard Overview', icon: PieChart },
+        { href: '/admin/notifications', label: 'Notifications', icon: Bell },
         { href: '/admin/manage', label: 'Manage Files', icon: FileText },
         { href: '/admin/upload', label: 'Upload Resource', icon: Upload },
         { href: '/admin/branches', label: 'Manage Branches', icon: Layers },

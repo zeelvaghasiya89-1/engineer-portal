@@ -168,23 +168,37 @@ export default function Dashboard() {
         )
     }
 
+    const handleOpenMoveModal = (res: Resource) => {
+        if (!res.id) {
+            alert('CRITICAL ERROR: This resource has no ID.\n\nYour database is missing the "id" column.\nPlease run the SQL repair script I provided immediately!')
+            return
+        }
+        setResourceToMove(res.id)
+        setCurrentResourceFolder(res.folder_id || null)
+        setShowMoveModal(true)
+    }
+
     const handleDeleteResource = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation()
+
+        if (!id) {
+            alert('CRITICAL ERROR: This resource has no ID.\n\nYour database is missing the "id" column.\nPlease run the SQL repair script I provided!')
+            return
+        }
+
         if (!confirm('Are you sure you want to delete this resource?')) return
         setDeletingId(id)
 
-        const { error } = await supabase.from('resources').delete().eq('id', id)
-        if (!error) {
+        try {
+            const { error } = await supabase.from('resources').delete().eq('id', id)
+            if (error) throw error
             setResources(prev => prev.filter(r => r.id !== id))
-        } else {
+        } catch (error: any) {
             console.error('Delete error:', error)
-            // Debug: Check columns
-            const { data: debugData } = await supabase.from('resources').select('*').limit(1)
-            const keys = debugData && debugData[0] ? Object.keys(debugData[0]).join(', ') : 'no data'
-            // Show error in UI
-            alert(`ERROR: ${error.message}\n\nYOUR COLUMNS: ${keys}\n\nPlease send this to me!`)
+            alert(`Failed to delete: ${error.message}`)
+        } finally {
+            setDeletingId(null)
         }
-        setDeletingId(null)
     }
 
     const handleDownload = async (url: string, title?: string) => {
@@ -696,9 +710,7 @@ export default function Dashboard() {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
-                                                                setResourceToMove(res.id)
-                                                                setCurrentResourceFolder(res.folder_id || null)
-                                                                setShowMoveModal(true)
+                                                                handleOpenMoveModal(res)
                                                             }}
                                                             className="p-2 sm:p-1.5 rounded-md bg-[#282e39] sm:bg-transparent hover:bg-white/10 text-[#9da6b9] hover:text-white"
                                                             title="Move to Folder"
@@ -723,7 +735,7 @@ export default function Dashboard() {
                                                 <span className="font-mono text-[10px] text-[#9da6b9]">{res.type}</span>
                                             </div>
                                             {/* Mobile tap indicator */}
-                                            <div className="sm:hidden text-center text-xs text-[#135bec] font-medium flex items-center justify-center gap-1 pt-2 border-t border-[#282e39]">
+                                            < div className="sm:hidden text-center text-xs text-[#135bec] font-medium flex items-center justify-center gap-1 pt-2 border-t border-[#282e39]" >
                                                 <span className="material-symbols-outlined text-[16px]">touch_app</span>
                                                 Tap to open
                                             </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
-import { User, LogOut, Save, Loader2, Search, Bell, Home, FolderOpen, Shield, History, CloudUpload, Download, Upload, Edit2 } from 'lucide-react'
+import { User, LogOut, Save, Loader2, Search, Bell, Home, FolderOpen, Shield, History, CloudUpload, Download, Upload, Edit2, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 
 type Profile = {
@@ -42,6 +42,7 @@ export default function ProfilePage() {
     const [formFullName, setFormFullName] = useState('')
 
     const [activeTab, setActiveTab] = useState('overview')
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -143,15 +144,22 @@ export default function ProfilePage() {
     return (
         <div className="bg-[#101622] text-white min-h-screen flex flex-col font-sans">
             {/* Top Navigation */}
-            <header className="flex items-center justify-between whitespace-nowrap border-b border-[#282e39] bg-[#1C2333] px-6 py-3 sticky top-0 z-50">
-                <div className="flex items-center gap-8">
-                    <Link href="/dashboard" className="flex items-center gap-4 text-white">
+            <header className="flex items-center justify-between whitespace-nowrap border-b border-[#282e39] bg-[#1C2333] px-4 sm:px-6 py-3 sticky top-0 z-50">
+                <div className="flex items-center gap-4 sm:gap-8">
+                    {/* Mobile Menu Button */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <Link href="/dashboard" className="flex items-center gap-2 sm:gap-4 text-white">
                         <div className="size-8 text-[#135bec]">
                             <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z"></path>
                             </svg>
                         </div>
-                        <h2 className="text-lg font-bold leading-tight tracking-tight">EngineerHub</h2>
+                        <h2 className="text-lg font-bold leading-tight tracking-tight hidden sm:block">EngineerHub</h2>
                     </Link>
                     <nav className="hidden md:flex items-center gap-8">
                         <Link className="text-[#9da6b9] hover:text-[#135bec] text-sm font-medium transition-colors" href="/dashboard">Resources</Link>
@@ -177,11 +185,31 @@ export default function ProfilePage() {
                 </div>
             </header>
 
+            {/* Mobile Sidebar Overlay */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Main Content Layout */}
             <div className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* LEFT COLUMN: Sidebar */}
-                    <aside className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
+                    <aside className={`
+                        fixed lg:static inset-y-0 left-0 w-80 flex-shrink-0 flex flex-col gap-6 z-50
+                        bg-[#101622] lg:bg-transparent p-4 lg:p-0 overflow-y-auto
+                        transition-transform duration-300 ease-in-out
+                        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                    `}>
+                        {/* Mobile Close Button */}
+                        <div className="lg:hidden flex items-center justify-between mb-4">
+                            <span className="font-bold text-white">Profile Menu</span>
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
+                                <X size={20} />
+                            </button>
+                        </div>
                         {/* Profile Identity Card */}
                         <div className="bg-[#1C2333] rounded-xl p-6 shadow-sm border border-[#282e39] flex flex-col items-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-blue-600 to-[#135bec] opacity-30"></div>

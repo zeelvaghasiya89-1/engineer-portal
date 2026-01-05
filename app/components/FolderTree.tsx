@@ -180,17 +180,43 @@ export default function FolderTree({ folders, selectedFolder, onSelectFolder, on
                         <Loader2 className="w-4 h-4 animate-spin text-red-400" />
                     )}
 
-                    {/* More button (admin only) */}
-                    {isAdmin && !editingFolder && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                setContextMenu({ folderId: folder.id, x: e.clientX, y: e.clientY })
-                            }}
-                            className="p-1 rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <MoreVertical className="w-4 h-4" />
-                        </button>
+                    {/* Action buttons - always visible when selected (admin only) */}
+                    {isAdmin && !editingFolder && deleting !== folder.id && (
+                        <div className={`flex items-center gap-0.5 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+                            {/* Add Subfolder */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onCreateFolder(folder.id)
+                                }}
+                                className="p-1.5 rounded hover:bg-white/20 text-[#9da6b9] hover:text-white transition-colors"
+                                title="Add Subfolder"
+                            >
+                                <FolderPlus className="w-4 h-4" />
+                            </button>
+                            {/* Rename */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    startRename(folder)
+                                }}
+                                className="p-1.5 rounded hover:bg-white/20 text-[#9da6b9] hover:text-white transition-colors"
+                                title="Rename"
+                            >
+                                <Edit2 className="w-4 h-4" />
+                            </button>
+                            {/* Delete */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDelete(folder.id)
+                                }}
+                                className="p-1.5 rounded hover:bg-red-500/20 text-[#9da6b9] hover:text-red-400 transition-colors"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
                     )}
                 </div>
 

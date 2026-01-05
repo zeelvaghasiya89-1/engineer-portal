@@ -191,8 +191,8 @@ export default function FolderTree({ folders, selectedFolder, onSelectFolder, on
                 {/* Floating Action Menu - shows when folder is selected */}
                 {isAdmin && isSelected && !editingFolder && deleting !== folder.id && (
                     <div
-                        className="absolute right-0 top-0 flex flex-col bg-[#1a1d24] border border-[#282e39] rounded-lg shadow-2xl overflow-hidden z-50"
-                        style={{ transform: 'translateX(calc(100% + 8px))' }}
+                        className="fixed flex flex-col bg-[#1a1d24] border border-[#282e39] rounded-lg shadow-2xl overflow-hidden"
+                        style={{ zIndex: 9999, left: '270px' }}
                     >
                         {/* Add Subfolder */}
                         <button

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye } from 'lucide-react'
+import { Search, Download, FileText, Video, File, BookOpen, User, LogIn, ChevronDown, Filter, Layers, Book, GraduationCap, Menu, X, Plus, Trash2, Settings, Loader2, LayoutDashboard, Bell, Eye, Check, ArrowUpDown } from 'lucide-react'
 import ManageBranchesModal from '@/app/components/ManageBranchesModal'
 
 // Types
@@ -17,6 +17,7 @@ type Resource = {
     type: string
     file_url: string
     uploaded_by: string
+    created_at?: string
 }
 
 type Profile = {
@@ -44,6 +45,18 @@ export default function Dashboard() {
     const [selectedSemester, setSelectedSemester] = useState<number | ''>('')
     const [selectedType, setSelectedType] = useState<string>('')
     const [searchQuery, setSearchQuery] = useState('')
+
+    // Sort
+    const [sortBy, setSortBy] = useState<'popularity' | 'newest' | 'oldest' | 'title'>('newest')
+    const [showSortMenu, setShowSortMenu] = useState(false)
+
+    // Notifications
+    const [showNotifications, setShowNotifications] = useState(false)
+    const [notifications] = useState([
+        { id: 1, text: 'New notes added for Data Structures', time: '2 hours ago', unread: true },
+        { id: 2, text: 'Mid-sem papers uploaded for Civil', time: '5 hours ago', unread: true },
+        { id: 3, text: 'Lab manual updated for Electronics', time: '1 day ago', unread: false },
+    ])
 
     // Mobile specific
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -109,6 +122,21 @@ export default function Dashboard() {
         if (data) setResources(data)
     }
 
+    // Sort resources
+    const sortedResources = [...resources].sort((a, b) => {
+        switch (sortBy) {
+            case 'newest':
+                return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            case 'oldest':
+                return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+            case 'title':
+                return a.title.localeCompare(b.title)
+            case 'popularity':
+            default:
+                return 0 // Keep original order for popularity (would need view count)
+        }
+    })
+
     const handleBranchToggle = (branchName: string) => {
         setSelectedBranches(prev =>
             prev.includes(branchName)
@@ -142,8 +170,21 @@ export default function Dashboard() {
         setSearchQuery('')
     }
 
+    const handleViewCollection = () => {
+        // Filter to show only exam-related materials
+        setSelectedType('Papers')
+        setSearchQuery('')
+    }
+
     const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
     const types = ['Notes', 'Papers', 'Labs', 'Books']
+
+    const sortOptions = [
+        { value: 'popularity', label: 'Popularity' },
+        { value: 'newest', label: 'Newest First' },
+        { value: 'oldest', label: 'Oldest First' },
+        { value: 'title', label: 'Title A-Z' },
+    ]
 
     const getTypeIcon = (type: string) => {
         switch (type) {
@@ -166,7 +207,22 @@ export default function Dashboard() {
         }
     }
 
-    const getBranchColor = (branch: string) => {
+    const getBranchColor = (branch: string, isSelected: boolean = false) => {
+        const colors: { [key: string]: { bg: string, selected: string } } = {
+            'Civil': { bg: 'hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/30', selected: 'bg-orange-500/20 text-orange-400 border-orange-500/40' },
+            'Common': { bg: 'hover:bg-gray-500/10 hover:text-gray-300 hover:border-gray-500/30', selected: 'bg-gray-500/20 text-gray-300 border-gray-500/40' },
+            'Computer Science': { bg: 'hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30', selected: 'bg-blue-500/20 text-blue-400 border-blue-500/40' },
+            'Electrical': { bg: 'hover:bg-yellow-500/10 hover:text-yellow-400 hover:border-yellow-500/30', selected: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' },
+            'Electronics': { bg: 'hover:bg-purple-500/10 hover:text-purple-400 hover:border-purple-500/30', selected: 'bg-purple-500/20 text-purple-400 border-purple-500/40' },
+            'Information Technology': { bg: 'hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30', selected: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40' },
+            'Mechanical': { bg: 'hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30', selected: 'bg-red-500/20 text-red-400 border-red-500/40' },
+        }
+        const defaultColor = { bg: 'hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30', selected: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' }
+        const color = colors[branch] || defaultColor
+        return isSelected ? color.selected : color.bg
+    }
+
+    const getBadgeColor = (branch: string) => {
         const colors = [
             'bg-blue-500/10 text-blue-400 border-blue-500/20',
             'bg-orange-500/10 text-orange-400 border-orange-500/20',
@@ -228,10 +284,44 @@ export default function Dashboard() {
                         </Link>
                     )}
                     <div className="h-8 w-[1px] bg-[#282e39] mx-1 hidden lg:block"></div>
-                    <button className="text-[#9da6b9] hover:text-white transition-colors relative p-2">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full border-2 border-[#111318]"></span>
-                    </button>
+
+                    {/* Notifications Button */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className="text-[#9da6b9] hover:text-white transition-colors relative p-2"
+                        >
+                            <Bell className="w-5 h-5" />
+                            {notifications.filter(n => n.unread).length > 0 && (
+                                <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full border-2 border-[#111318]"></span>
+                            )}
+                        </button>
+
+                        {/* Notifications Dropdown */}
+                        {showNotifications && (
+                            <>
+                                <div className="fixed inset-0 z-30" onClick={() => setShowNotifications(false)} />
+                                <div className="absolute right-0 top-full mt-2 w-80 bg-[#1a1d24] border border-[#282e39] rounded-xl shadow-2xl z-40 overflow-hidden">
+                                    <div className="px-4 py-3 border-b border-[#282e39] flex items-center justify-between">
+                                        <h3 className="font-semibold text-white">Notifications</h3>
+                                        <span className="text-xs text-[#9da6b9]">{notifications.filter(n => n.unread).length} new</span>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {notifications.map(notif => (
+                                            <div key={notif.id} className={`px-4 py-3 border-b border-[#282e39]/50 hover:bg-[#282e39]/30 cursor-pointer transition-colors ${notif.unread ? 'bg-[#135bec]/5' : ''}`}>
+                                                <p className="text-sm text-white">{notif.text}</p>
+                                                <p className="text-xs text-[#9da6b9] mt-1">{notif.time}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="px-4 py-2 border-t border-[#282e39]">
+                                        <button className="text-sm text-[#135bec] hover:underline w-full text-center">View all notifications</button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
                     {userProfile ? (
                         <Link href="/profile">
                             <div className="size-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full ring-2 ring-[#282e39] cursor-pointer flex items-center justify-center text-white">
@@ -270,32 +360,47 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    {/* Filters: Branch */}
+                    {/* Filters: Branch - Now with animated buttons */}
                     <div className="px-5 pt-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-bold text-[#9da6b9] uppercase tracking-wider">Branch</h3>
                             <button onClick={clearFilters} className="text-[10px] text-[#135bec] hover:underline">Clear</button>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            {branches.map(branch => (
-                                <label key={branch.id} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-[#1a1d24] cursor-pointer transition-colors">
-                                    <div className="relative flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedBranches.includes(branch.name)}
-                                            onChange={() => handleBranchToggle(branch.name)}
-                                            className="h-4 w-4 rounded border-gray-600 bg-transparent text-[#135bec] focus:ring-0 focus:ring-offset-0 transition-all checked:bg-[#135bec] checked:border-[#135bec]"
-                                        />
-                                    </div>
-                                    <span className="text-sm text-gray-300 font-medium group-hover:text-white">{branch.name}</span>
-                                </label>
-                            ))}
+                        <div className="flex flex-col gap-2">
+                            {branches.map(branch => {
+                                const isSelected = selectedBranches.includes(branch.name)
+                                return (
+                                    <button
+                                        key={branch.id}
+                                        onClick={() => handleBranchToggle(branch.name)}
+                                        className={`
+                                            group flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all duration-200 text-left
+                                            ${isSelected
+                                                ? `${getBranchColor(branch.name, true)} scale-[1.02]`
+                                                : `border-[#282e39] text-[#9da6b9] ${getBranchColor(branch.name, false)}`
+                                            }
+                                            hover:scale-[1.02] active:scale-[0.98]
+                                        `}
+                                    >
+                                        <div className={`
+                                            flex items-center justify-center size-5 rounded border transition-all duration-200
+                                            ${isSelected
+                                                ? 'bg-current border-current/50'
+                                                : 'border-current/30 group-hover:border-current/50'
+                                            }
+                                        `}>
+                                            {isSelected && <Check className="w-3 h-3 text-[#111318]" />}
+                                        </div>
+                                        <span className="text-sm font-medium">{branch.name}</span>
+                                    </button>
+                                )
+                            })}
                             {branches.length === 0 && <div className="text-xs text-gray-600 px-2">No branches found</div>}
                         </div>
                         {userProfile?.role === 'admin' && (
                             <button
                                 onClick={() => setIsBranchModalOpen(true)}
-                                className="mt-3 text-xs text-[#135bec] hover:underline flex items-center gap-1"
+                                className="mt-4 text-xs text-[#135bec] hover:underline flex items-center gap-1"
                             >
                                 <Settings size={12} />
                                 Manage Branches
@@ -333,7 +438,7 @@ export default function Dashboard() {
                                 <button
                                     key={t}
                                     onClick={() => setSelectedType(selectedType === t ? '' : t)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedType === t
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 hover:scale-105 active:scale-95 ${selectedType === t
                                         ? 'bg-[#135bec]/20 text-[#135bec] border-[#135bec]/30'
                                         : 'bg-[#1a1d24] text-[#9da6b9] border-[#282e39] hover:border-gray-500 hover:text-white'
                                         }`}
@@ -375,7 +480,10 @@ export default function Dashboard() {
                                     <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2 tracking-tight">Mid-Sem Prep: Digital Logic Design</h1>
                                     <p className="text-blue-100 text-sm md:text-base leading-relaxed">Curated list of top-rated handwritten notes, past year papers, and lab manuals specifically for the upcoming mid-semester examinations.</p>
                                 </div>
-                                <button className="shrink-0 rounded-lg bg-white text-[#135bec] hover:bg-gray-50 px-5 py-2.5 text-sm font-bold shadow-lg transition-colors flex items-center gap-2">
+                                <button
+                                    onClick={handleViewCollection}
+                                    className="shrink-0 rounded-lg bg-white text-[#135bec] hover:bg-gray-50 px-5 py-2.5 text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                                >
                                     View Collection
                                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                                 </button>
@@ -388,12 +496,39 @@ export default function Dashboard() {
                                 <span className="material-symbols-outlined text-[#135bec]">trending_up</span>
                                 {selectedBranches.length > 0 ? selectedBranches.join(', ') : 'All Resources'}
                             </h2>
-                            <div className="flex items-center gap-2 text-sm text-[#9da6b9]">
-                                <span className="hidden sm:inline">Sort by:</span>
-                                <button className="flex items-center gap-1 font-medium text-white hover:text-[#135bec]">
-                                    Popularity
-                                    <ChevronDown className="w-4 h-4" />
+
+                            {/* Sort Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowSortMenu(!showSortMenu)}
+                                    className="flex items-center gap-2 text-sm text-[#9da6b9] hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-[#1a1d24]"
+                                >
+                                    <ArrowUpDown className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Sort by:</span>
+                                    <span className="font-medium text-white">{sortOptions.find(o => o.value === sortBy)?.label}</span>
+                                    <ChevronDown className={`w-4 h-4 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
                                 </button>
+
+                                {showSortMenu && (
+                                    <>
+                                        <div className="fixed inset-0 z-30" onClick={() => setShowSortMenu(false)} />
+                                        <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1d24] border border-[#282e39] rounded-xl shadow-2xl z-40 overflow-hidden py-1">
+                                            {sortOptions.map(option => (
+                                                <button
+                                                    key={option.value}
+                                                    onClick={() => {
+                                                        setSortBy(option.value as any)
+                                                        setShowSortMenu(false)
+                                                    }}
+                                                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${sortBy === option.value ? 'text-[#135bec] bg-[#135bec]/10' : 'text-white hover:bg-[#282e39]'}`}
+                                                >
+                                                    {option.label}
+                                                    {sortBy === option.value && <Check className="w-4 h-4" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -403,7 +538,7 @@ export default function Dashboard() {
                                 <div className="size-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
                                 <p>Loading library...</p>
                             </div>
-                        ) : resources.length === 0 ? (
+                        ) : sortedResources.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-24 text-center">
                                 <div className="bg-gray-800/50 p-6 rounded-full mb-6">
                                     <Search className="size-12 text-gray-600" />
@@ -422,7 +557,7 @@ export default function Dashboard() {
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-                                    {resources.map(res => (
+                                    {sortedResources.map(res => (
                                         <div key={res.id} className="group flex flex-col gap-4 rounded-xl border border-[#282e39] bg-[#1a1d24] p-4 hover:border-[#135bec]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#135bec]/5 hover:-translate-y-1 cursor-pointer">
                                             <div className="flex items-start justify-between">
                                                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${getTypeColor(res.type)}`}>
@@ -460,7 +595,7 @@ export default function Dashboard() {
                                             </div>
                                             <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
                                                 <div className="flex gap-2">
-                                                    <span className={`inline-flex items-center rounded px-2 py-0.5 font-mono text-[10px] font-medium border ${getBranchColor(res.branch)}`}>{res.branch}</span>
+                                                    <span className={`inline-flex items-center rounded px-2 py-0.5 font-mono text-[10px] font-medium border ${getBadgeColor(res.branch)}`}>{res.branch}</span>
                                                     <span className="inline-flex items-center rounded bg-purple-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-400 border border-purple-500/20">Sem {res.semester}</span>
                                                 </div>
                                                 <span className="font-mono text-[10px] text-[#9da6b9]">{res.type}</span>
@@ -471,7 +606,7 @@ export default function Dashboard() {
 
                                 {/* Load More */}
                                 <div className="flex justify-center mb-8">
-                                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-[#282e39] bg-[#1a1d24] text-[#9da6b9] text-sm font-medium hover:text-white hover:border-gray-500 transition-all">
+                                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-[#282e39] bg-[#1a1d24] text-[#9da6b9] text-sm font-medium hover:text-white hover:border-gray-500 transition-all hover:scale-105 active:scale-95">
                                         Load more resources
                                         <ChevronDown className="w-4 h-4" />
                                     </button>

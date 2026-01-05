@@ -52,12 +52,22 @@ export default function AdminManage() {
 
     const fetchData = async () => {
         setLoading(true)
+
+        // Ensure session is loaded so RLS works
+        await supabase.auth.getUser()
+
         const [resRes, resBranches] = await Promise.all([
             supabase.from('resources').select('*').order('created_at', { ascending: false }),
             supabase.from('branches').select('*').order('name')
         ])
 
-        if (resRes.data) setResources(resRes.data)
+        if (resRes.error) {
+            console.error('Fetch resources error:', resRes.error)
+            setMessage({ type: 'error', text: 'Failed to load resources: ' + resRes.error.message })
+        } else if (resRes.data) {
+            setResources(resRes.data)
+        }
+
         if (resBranches.data) setBranches(resBranches.data)
         setLoading(false)
     }
